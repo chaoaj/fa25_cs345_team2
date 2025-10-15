@@ -1,1 +1,5 @@
-random comment
+<<<<<<< HEAD
+
+=======
+// This is my change for the git lab
+>>>>>>> 99628545be203ba97f6aa80c9af1e1459a5afe1c
