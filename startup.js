@@ -9,7 +9,7 @@ function draw() {
   if (!gameRunning) {
     textSize(50);
     fill('black');
-    text("Click to Start!", 250, 300);
+    text("Click to Start!", 430, 360);
   }
   if (gameRunning) {
     drawGrid();
@@ -31,7 +31,7 @@ function mousePressed() {
 }
 
 function windowResized() {
-  // when fullscreen is toggled, resize canvas to match new screen size
+  
   if (fullscreen()) {
     resizeCanvas(windowWidth, windowHeight);
   } else {
