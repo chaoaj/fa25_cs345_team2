@@ -14,18 +14,28 @@ function draw() {
   if (gameRunning) {
     drawGrid();
     border();
+    
+    cells.create();
+    cells.change();
+
     player.base();
     player.movement();
 
+    
 
   }
 }
 
 function mousePressed() {
   if (!gameRunning) {
-    gameRunning = !gameRunning;
+    gameRunning = true;
     player = new Player();
+    cells = new Cells();
+    cells.create();
   }
-  
 }
 
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}

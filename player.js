@@ -36,8 +36,16 @@ class Player {
       dx /= length;
       dy /= length;
 
-      this.x += dx * this.speed;
-      this.y += dy * this.speed;
+      let nextX = this.x + dx * this.speed;
+      let nextY = this.y + dy * this.speed;
+
+      if (!this.collidesWithWall(nextX, this.y)) {
+        this.x = nextX;
+      }
+
+      if (!this.collidesWithWall(this.x, nextY)) {
+        this.y = nextY;
+}
     }
 
     // Boundaries
@@ -78,5 +86,31 @@ class Player {
       
     
   }
+
+  collidesWithWall(nextX, nextY) {
+    let gridSize = windowHeight / 18;
+    let halfW = this.playerSize / 2;
+    let halfH = this.playerHeight / 2;
+
+    for (let i = 0; i < cells.cells.length; i++) {
+      for (let j = 0; j < cells.cells[i].length; j++) {
+        let cell = cells.cells[i][j];
+        if (cell.isWall()) {
+          
+          if (
+            nextX + halfW > cell.x &&
+            nextX - halfW < cell.x + gridSize &&
+            nextY + halfH > cell.y &&
+            nextY - halfH < cell.y + gridSize
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
   
 }
