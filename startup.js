@@ -1,7 +1,7 @@
 let gameRunning = false;
 
 function setup() {
-  createCanvas(1280, 720);
+  createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
@@ -17,6 +17,7 @@ function draw() {
     player.base();
     player.movement();
 
+
   }
 }
 
@@ -24,18 +25,7 @@ function mousePressed() {
   if (!gameRunning) {
     gameRunning = !gameRunning;
     player = new Player();
-    let fs = fullscreen();
-    fullscreen(!fs);
   }
   
-}
-
-function windowResized() {
-  
-  if (fullscreen()) {
-    resizeCanvas(windowWidth, windowHeight);
-  } else {
-    resizeCanvas(1280, 720);
-  }
 }
 
