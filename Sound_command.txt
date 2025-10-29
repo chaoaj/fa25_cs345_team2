@@ -1,0 +1,14 @@
+let.sound;
+let.sound;
+let.sound;
+
+
+function preload(){ //preloads all desired sounds
+    sound = loadsound(example); //filler variable for desired sound
+    sound = loadsound(example);
+    sound = loadsound(example);
+}
+
+
+if(action); //replace action with desired call (such as hit, move, ect.)
+    sound.play(); //will play chosen sound
