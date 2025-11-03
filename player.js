@@ -62,7 +62,7 @@ class Player {
       }
     }
 
-    // Boundary limits: stay inside the 16x16 grid
+    // Boundary limits
     const minX = offsetX + this.playerSize / 2;
     const maxX = offsetX + gridPixels - this.playerSize / 2;
     const minY = offsetY + this.playerHeight / 2;
