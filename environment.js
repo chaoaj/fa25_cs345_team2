@@ -38,6 +38,7 @@ class Cells {
     this.cells = [];
     this.exitSide = null;
     this.entranceSide = null;
+    this.layout = null;
   }
 
   create() {
@@ -66,9 +67,11 @@ class Cells {
 
     switch (name) {
       case "first":
+        this.layout = "first";
         break;
 
       case "cross":
+        this.layout = "cross";
         for (let i = 3; i < 13; i++) {
           this.cells[8][i].setType("wall");
           this.cells[7][i].setType("wall");
@@ -87,6 +90,7 @@ class Cells {
         break;
 
       case "maze":
+        this.layout = "maze";
         for (let x = 3; x < 15; x += 3) {
           for (let y = 1; y < 15; y++) {
             if (y % 3 !== 0) this.cells[x][y].setType("wall");
@@ -95,6 +99,7 @@ class Cells {
         break;
 
       case "blocks":
+        this.layout = "blocks";
         for (let x = 3; x <= 6; x++) {
           for (let y = 3; y <= 6; y++) {
             this.cells[x][y].setType("wall");
@@ -153,8 +158,13 @@ class Cells {
     return;
   }
 
+
+
   const layouts = ["cross", "maze", "blocks"];
-  const chosen = random(layouts);
+  const valueToRemove = this.layout;
+
+  const newLayouts = layouts.filter(item => item !== valueToRemove);
+  const chosen = random(newLayouts);
   this.loadLayout(chosen);
 }
 
