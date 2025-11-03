@@ -19,6 +19,7 @@ function draw() {
   if (gameRunning) {
     drawGrid();
     border();
+    level();
 
     // ✅ show all cell contents (walls/exits) each frame
     for (let i = 0; i < cells.cells.length; i++) {
@@ -38,7 +39,7 @@ function mousePressed() {
     player = new Player();
     cells = new Cells();
     cells.create();
-    cells.change();  // generates first map only once
+    cells.change();
   }
 }
 

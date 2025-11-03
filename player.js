@@ -39,6 +39,7 @@ class Player {
     text('dx: ' + dx, 10, 20)
     text('dy: ' + dy, 400, 20)
     text(this.direction, 195, 20)
+    
 
     if (keyIsDown(87) || keyIsDown(UP_ARROW)) dy -= 1;
     if (keyIsDown(83) || keyIsDown(DOWN_ARROW)) dy += 1;

@@ -1,5 +1,12 @@
 // Environment Functions
 let gridSize;
+let levelNumber = -1;
+
+function level() {
+fill('white')
+    textSize(10)
+    text('Level: ' + levelNumber, 1000, 20)
+}
 
 function border() {
   gridSize = Math.min(windowWidth, windowHeight) / 20; // Base grid cell size
@@ -16,6 +23,8 @@ function border() {
   rect(0, windowHeight - offsetY, windowWidth, offsetY);
   rect(0, 0, offsetX, windowHeight);
   rect(windowWidth - offsetX, 0, offsetX, windowHeight);
+
+  fill
 }
 
 function drawGrid() {
@@ -65,6 +74,7 @@ class Cells {
       }
     }
     this.layout = name;
+    levelNumber++;
 
     switch (name) {
       case "first":
