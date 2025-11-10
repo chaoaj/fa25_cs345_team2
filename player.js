@@ -6,13 +6,15 @@ class Player {
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
     this.playerHeight = gridSize * 0.8;
     this.playerSize = this.playerHeight * 0.5;
+    this.maxHP = 3;
     this.hp = 3;
     this.strength = 1;
     this.resistance = 1;
-    this.speed = 3;
+    this.speed = 2;
     this.direction = 'right';
     this.item = new Weapon("sword");
     this.mana = null;
+    this.maxMana = null;
   }
 
   base() {
@@ -39,7 +41,7 @@ class Player {
     text('dx: ' + dx, 10, 20)
     text('dy: ' + dy, 400, 20)
     text(this.direction, 195, 20)
-    
+
 
     if (keyIsDown(87) || keyIsDown(UP_ARROW)) dy -= 1;
     if (keyIsDown(83) || keyIsDown(DOWN_ARROW)) dy += 1;
@@ -86,42 +88,15 @@ class Player {
 
 
     for (let i = 0; i < cells.cells.length; i++) {
-    for (let j = 0; j < cells.cells[i].length; j++) {
-      const cell = cells.cells[i][j];
-      if (cell.isExit() && cell.contains(this.x, this.y)) {
-        console.log("Player reached exit!");
-
-        const lastExit = cells.exitSide;
-
-        // Create new room
-        cells.create();
-        // Set opposite spawn side
-        cells.change();
-
-        const gridSize = Math.min(windowWidth, windowHeight) / 20;
-        const gridPixels = gridSize * 16;
-        const offsetX = (windowWidth - gridPixels) / 2;
-        const offsetY = (windowHeight - gridPixels) / 2;
-
-        // Corrected spawn location
-        if (lastExit === "top") {
-          // Came from top → spawn near bottom center
-          this.x = offsetX + 8 * gridSize;
-          this.y = offsetY + gridPixels - gridSize * 1.5;
-        } else if (lastExit === "right") {
-          // Came from right → spawn near left center
-          this.x = offsetX + gridSize * 1.5;
-          this.y = offsetY + 8 * gridSize;
-        } else {
-          // Default center
-          this.x = width / 2;
-          this.y = height / 2;
+      for (let j = 0; j < cells.cells[i].length; j++) {
+        const cell = cells.cells[i][j];
+        if (cell.isExit() && cell.contains(this.x, this.y) && !transitioning && enemies.length == 0) {
+          transitioning = true;
+          this.lastExit = cells.exitSide;
+          return;
         }
-
-        return;
       }
     }
-  }
 }
 
 
@@ -148,9 +123,35 @@ class Player {
     return false;
   }
 
-  attack() {
-    if (this.item.getType() === "sword") {
-      this.item.swordAttack(this.x, this.y, this.direction);
+  finishRoomTransition() {
+    
+    cells.create();
+    cells.change();
+
+    const gridSize = Math.min(windowWidth, windowHeight) / 20;
+    const gridPixels = gridSize * 16;
+    const offsetX = (windowWidth - gridPixels) / 2;
+    const offsetY = (windowHeight - gridPixels) / 2;
+
+    
+    if (this.lastExit === "top") {
+      this.x = offsetX + 8 * gridSize;
+      this.y = offsetY + gridPixels - gridSize * 1.5;
+    } else if (this.lastExit === "right") {
+      this.x = offsetX + gridSize * 1.5;
+      this.y = offsetY + 8 * gridSize;
+    } else {
+      this.x = width / 2;
+      this.y = height / 2;
     }
+
   }
+
+
+  attack() {
+  if (this.item.getType() === "sword") {
+    this.item.swordAttack(this.x, this.y, this.direction);
+  }
+}
+
 }

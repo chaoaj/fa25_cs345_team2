@@ -118,6 +118,19 @@ class Cells {
           }
         }
         break;
+
+      case "deuceInv":
+        for (let x = 9; x <= 12; x++) {
+          for (let y = 3; y <= 6; y++) {
+            this.cells[x][y].setType("wall");
+          }
+        }
+        for (let x = 3; x <= 6; x++) {
+          for (let y = 9; y <= 12; y++) {
+            this.cells[x][y].setType("wall");
+          }
+        }
+        break;
     }
 
     
@@ -167,12 +180,14 @@ class Cells {
 
 
 
-  const layouts = ["cross", "apartments", "deuce"];
+  const layouts = ["cross", "apartments", "deuce", "deuceInv"];
   const valueToRemove = this.layout;
 
   const newLayouts = layouts.filter(item => item !== valueToRemove);
   const chosen = random(newLayouts);
   this.loadLayout(chosen);
+  spawnEnemiesForLevel(chosen);
+
 }
 
 }
@@ -215,9 +230,15 @@ class Cell {
       fill("black");
       square(this.x, this.y, gridSize);
     } else if (this.type === "exit") {
-      fill("green");
+      if (enemies.length > 0) {
+        fill("yellow")
+      }
+      if (enemies.length == 0) {
+        fill("green");
+      }
       square(this.x, this.y, gridSize);
     }
   }
 
 }
+
