@@ -1,5 +1,5 @@
 
-import { AppleTimer } from './appletimer.js';
+import { AppleTimer } from './appleTimer.js';
 
 // === p5.js Snake Pathfinding AI ===
 // Grid-based snake with BFS to apple, safety check (head->tail), and 5s apple auto-reposition.
