@@ -12,70 +12,45 @@
     if (typeof this._hpVisual !== "number") this._hpVisual = this.hp;
   };
 
-  Player.prototype.drawHealth = function () {
-    _ensureHP.call(this);
-    this._hpVisual = lerp(this._hpVisual, this.hp, 0.2);
 
-    const barWidth  = this.playerSize;
-    const barHeight = this.playerHeight * 0.12;
-    const barX = this.x;
-    const barY = this.y - this.playerHeight/2 - barHeight*1.2;
+ Player.prototype.drawHUD = function () {
+  // smooth animation toward current HP
+  if (typeof this._hpVisual === "undefined") this._hpVisual = this.hp;
+  this._hpVisual = lerp(this._hpVisual, this.hp, 0.2);
 
-    // Border
-    rectMode(CENTER);
-    stroke(0);
-    strokeWeight(1);
-    noFill();
-    rect(barX, barY, barWidth, barHeight, 2);
+  // placement & size (bottom center)
+  const margin = 200;              // distance from bottom edge
+  const barWidth = width * 0.2;   // total length of the bar
+  const barHeight = 24;           // thickness
+  const barX = 20;
+  const barY = height - margin - barHeight;
+  const r = 6;                    // corner radius
 
-    // Fill %
-    const pct = constrain(this._hpVisual / this.maxHP, 0, 1);
-    let c;
-    if (pct > 0.5) c = color(map(pct, 0.5, 1, 255, 0), 255, 0);
-    else           c = color(255, map(pct, 0, 0.5, 0, 255), 0);
+  // background panel (subtle plate)
+  noStroke();
+  fill(0, 0, 0, 120);
+  rectMode(CORNER);
+  rect(barX - 4, barY - 4, barWidth + 8, barHeight + 8, r + 2);
 
-    noStroke();
-    fill(c);
-    const innerW = barWidth - 2;
-    const innerH = barHeight - 2;
-    const left   = barX - innerW/2;
-    rectMode(CORNER);
-    rect(left, barY - innerH/2, innerW * pct, innerH, 2);
+  // border
+  stroke(255);
+  strokeWeight(2);
+  noFill();
+  rect(barX, barY, barWidth, barHeight, r);
 
-    // Optional number
-    textAlign(CENTER, CENTER);
-    fill(0);
-    textSize(barHeight * 0.8);
-    text(`${ceil(this._hpVisual)}/${this.maxHP}`, barX, barY);
+  // fill percent
+  const pct = constrain(this._hpVisual / this.maxHP, 0, 1);
+  const fillW = barWidth * pct;
 
-    // Restore defaults ONLY if code relies on them elsewhere
-    rectMode(CENTER);
-    textAlign(LEFT, BASELINE);
-  };
+  // RED fill — draw from the RIGHT edge so loss eats from right->left
+  noStroke();
+  fill(220, 0, 0); // solid red
+  const rightEdge = barX + barWidth;
+  rect(rightEdge - fillW, barY, fillW, barHeight, r);
 
-  Player.prototype.drawHUD = function () {
-    _ensureHP.call(this);
-    const margin = 12, w = 140, h = 14;
+};
 
-    noStroke(); fill(0, 100); rectMode(CORNER);
-    rect(margin-4, margin-4, w+8, h+8, 4);
 
-    stroke(0); strokeWeight(1); noFill();
-    rect(margin, margin, w, h, 3);
-
-    const pct = constrain(this._hpVisual / this.maxHP, 0, 1);
-    let c;
-    if (pct > 0.5) c = color(map(pct, 0.5, 1, 255, 0), 255, 0);
-    else           c = color(255, map(pct, 0, 0.5, 0, 255), 0);
-
-    noStroke(); fill(c);
-    rect(margin+1, margin+1, (w-2)*pct, h-2, 3);
-
-    fill(255); noStroke(); textSize(12);
-    textAlign(LEFT, CENTER);
-    text(`HP: ${ceil(this._hpVisual)}/${this.maxHP}`, margin+6, margin + h/2);
-    textAlign(LEFT, BASELINE);
-  };
 
   Player.prototype.takeDamage = function (amount = 1) {
     _ensureHP.call(this);

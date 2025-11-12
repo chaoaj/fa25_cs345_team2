@@ -4,8 +4,6 @@ let transitioning = false;
 let transitionAlpha = 0;
 let transitionTimer = 0;
 
-
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
@@ -31,6 +29,7 @@ function draw() {
     }
   }
 
+  // --- Player draw/update ---
   player.base();
   player.item.drawAttack(player.x, player.y, player.direction);
   player.item.update();
@@ -46,20 +45,18 @@ function draw() {
     player.movement();
   }
 
+  // --- Room transition overlay ---
   if (transitioning) {
     transitionTimer += deltaTime / 1000;
     if (transitionTimer < 0.4) {
-      
       transitionAlpha = map(transitionTimer, 0, 0.4, 0, 255);
     } else if (transitionTimer < 0.8) {
-      
       if (transitionTimer > 0.4 && !player.transitionHandled) {
         player.finishRoomTransition();
         player.transitionHandled = true;
       }
       transitionAlpha = 255;
     } else {
-      
       transitionAlpha = map(transitionTimer, 0.8, 1.2, 255, 0);
       if (transitionTimer >= 1.2) {
         transitioning = false;
@@ -78,8 +75,10 @@ function draw() {
     const offsetY = (windowHeight - gridPixels) / 2;
     rect(offsetX, offsetY, offsetX + gridPixels, offsetY + gridPixels);
   }
-}
 
+  // ADDED: draw HUD on top of everything (so it isn't dimmed by the overlay)
+  if (player.drawHUD) player.drawHUD();        // ADDED
+}
 
 function mousePressed() {
   if (!gameRunning) {
@@ -95,10 +94,14 @@ function keyPressed() {
   if (keyCode === 32 && gameRunning) {
     player.attack();
   }
+  // ADDED: quick test keys (optional)
+  if (gameRunning) {
+    if (key === 'J') player.takeDamage?.(1);   //Damages player for 1
+    if (key === 'K') player.heal?.(1);         //Heals player for 1
+    if (key === 'L') player.setMaxHP?.(player.maxHP + 1); //increase max HP for 1
+  }
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
-
