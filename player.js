@@ -15,6 +15,10 @@ class Player {
     this.item = new Weapon("sword");
     this.mana = null;
     this.maxMana = null;
+
+    // --- ADDED ---
+    this.stunTimer = 0; // Timer to prevent movement after being hit
+    // --- END ADDED ---
   }
 
   base() {
@@ -24,6 +28,14 @@ class Player {
   }
 
   movement() {
+    
+    // --- ADDED: Stun Check ---
+    if (this.stunTimer > 0) {
+      this.stunTimer -= deltaTime / 1000;
+      return; // Skip all movement logic if stunned
+    }
+    // --- END ADDED ---
+
 
     gridSize = Math.min(windowWidth, windowHeight) / 20;
     const gridPixels = gridSize * 16;
@@ -106,7 +118,7 @@ class Player {
     let halfH = this.playerHeight / 2;
 
     for (let i = 0; i < cells.cells.length; i++) {
-      for (let j = 0; j < cells.cells[i].length; j++) {
+      for (let j = 0; j< cells.cells[i].length; j++) {
         let cell = cells.cells[i][j];
         if (cell.isWall()) {
           if (

@@ -42,12 +42,10 @@
   const pct = constrain(this._hpVisual / this.maxHP, 0, 1);
   const fillW = barWidth * pct;
 
-  // RED fill — draw from the RIGHT edge so loss eats from right->left
+  // RED fill — draw from the LEFT edge so loss eats from left->right
   noStroke();
   fill(220, 0, 0); // solid red
-  const rightEdge = barX + barWidth;
-  rect(rightEdge - fillW, barY, fillW, barHeight, r);
-
+  rect(barX, barY, fillW, barHeight, r); 
 };
 
 
@@ -77,11 +75,13 @@
     this._hpVisual = this.hp;
   };
 
-  if (!Player.prototype.onDeath) {
-    Player.prototype.onDeath = function () {
-      // Placeholder: respawn/reset logic
-      this.hp = this.maxHP;
-      this._hpVisual = this.hp;
-    };
-  }
+  // --- MODIFIED: onDeath function ---
+  Player.prototype.onDeath = function () {
+    // Set global game state variable (defined in startup.js)
+    if (typeof window.isGameOver !== 'undefined') {
+      window.isGameOver = true;
+    }
+    // No need to reset HP here; resetGame will handle that.
+  };
+  // --- END MODIFIED ---
 })();

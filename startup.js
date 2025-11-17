@@ -3,6 +3,7 @@ let firstRoom = true;
 let transitioning = false;
 let transitionAlpha = 0;
 let transitionTimer = 0;
+let dead = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -16,6 +17,23 @@ function draw() {
     fill('black');
     textAlign(CENTER, CENTER);
     text("Click to Start!", width / 2, height / 2);
+    return;
+  }
+
+  if (!dead && player.hp == 0) {
+    dead = true;
+  }
+
+  if (dead) {
+    dead = true;
+    fill('black');
+    rectMode(CORNER);
+    rect(0, 0, windowWidth, windowHeight);
+    textSize(50);
+    fill('white');
+    textAlign(CENTER, CENTER);
+    text("GAME OVER", width / 2, height / 2);
+    text("Click to Restart!", width / 2, height / 2 + 75);
     return;
   }
 
@@ -81,14 +99,23 @@ function draw() {
 }
 
 function mousePressed() {
-  if (!gameRunning) {
+  if (!gameRunning || dead) {
     gameRunning = true;
+    dead = false;
+
+    firstRoom = true;
+    resetLevel();         
+
     player = new Player();
+
     cells = new Cells();
     cells.create();
-    cells.change();
+    cells.change();         
+
+    enemies = [];          
   }
 }
+
 
 function keyPressed() {
   if (keyCode === 32 && gameRunning) {

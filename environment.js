@@ -8,6 +8,10 @@ fill('white')
     text('Level: ' + levelNumber, 1000, 20)
 }
 
+function resetLevel() {
+  levelNumber = -1;
+}
+
 function border() {
   gridSize = Math.min(windowWidth, windowHeight) / 20; // Base grid cell size
   const gridPixels = gridSize * 16;
