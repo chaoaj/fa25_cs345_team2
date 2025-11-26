@@ -5,16 +5,63 @@ let transitionAlpha = 0;
 let transitionTimer = 0;
 let dead = false;
 
+// --- Sprite variables ---
+let spritesheet, imgWall, imgFloor;
+let imgPlayerSheet;
+let imgWeaponSheet;
+
+// --- ADDED: HUD Sprite Variables ---
+let imgHUDSheet;
+let imgHPBarFrame, imgMPBarFrame, imgHPBarFill, imgMPBarFill;
+// --- END ADDED ---
+
+// --- Preload function ---
+function preload() {
+  // Environment spritesheet
+  spritesheet = loadImage('libraries/Assets/Enviroment/enviroment.png');
+
+  // Player spritesheet
+  imgPlayerSheet = loadImage('libraries/Assets/Player/player.png');
+
+  // Weapon spritesheet
+  imgWeaponSheet = loadImage('libraries/Assets/Player/Key-Blade.png');
+  
+  // --- ADDED: Load the HUD spritesheet ---
+  imgHUDSheet = loadImage('libraries/Assets/Player/HPMPBar.png');
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  // --- Create sub-images ---
+  // We assume the sprites are 32x32 pixels on the sheet
+  // Wall texture is at (0, 0)
+  imgWall = spritesheet.get(0, 0, 32, 32);
+  // Floor texture is at (32, 0)
+  imgFloor = spritesheet.get(32, 0, 32, 32);
+
+  // --- ADDED: Create HUD sub-images ---
+  // This assumes the HPMPBar.png has 6 equal-height rows
+  if (imgHUDSheet) {
+    let barH = imgHUDSheet.height / 6; // Height of one bar row
+    let barW = imgHUDSheet.width;    // Full width
+    
+    // Get each part of the spritesheet
+    imgHPBarFrame = imgHUDSheet.get(0, 0, barW, barH);
+    imgMPBarFrame = imgHUDSheet.get(0, barH, barW, barH);
+    imgHPBarFill = imgHUDSheet.get(0, barH * 2, barW, barH);
+    imgMPBarFill = imgHUDSheet.get(0, barH * 3, barW, barH);
+  }
+  // --- END ADDED ---
 }
 
 function draw() {
-  background(220);
+  // MODIFIED: Changed background to black for a better border look
+  background(0);
 
   if (!gameRunning) {
     textSize(50);
-    fill('black');
+    fill('white');
     textAlign(CENTER, CENTER);
     text("Click to Start!", width / 2, height / 2);
     return;
@@ -37,7 +84,9 @@ function draw() {
     return;
   }
 
-  drawGrid();
+  // **MODIFIED: Commented out drawGrid() to remove the lines**
+  // drawGrid();
+
   border();
   level();
 
@@ -49,7 +98,7 @@ function draw() {
 
   // --- Player draw/update ---
   player.base();
-  player.item.drawAttack(player.x, player.y, player.direction);
+  player.item.drawAttack(player.x, player.y, player.direction); // <-- This will now draw the sprite
   player.item.update();
 
   for (let enemy of enemies) {
@@ -91,11 +140,12 @@ function draw() {
     const gridPixels = gridSize * 16;
     const offsetX = (windowWidth - gridPixels) / 2;
     const offsetY = (windowHeight - gridPixels) / 2;
-    rect(offsetX, offsetY, offsetX + gridPixels, offsetY + gridPixels);
+
+    rect(offsetX, offsetY, gridPixels, gridPixels);
   }
 
   // ADDED: draw HUD on top of everything (so it isn't dimmed by the overlay)
-  if (player.drawHUD) player.drawHUD();        // ADDED
+  if (player.drawHUD) player.drawHUD();
 }
 
 function mousePressed() {
@@ -104,15 +154,15 @@ function mousePressed() {
     dead = false;
 
     firstRoom = true;
-    resetLevel();         
+    resetLevel();
 
     player = new Player();
 
     cells = new Cells();
     cells.create();
-    cells.change();         
+    cells.change();
 
-    enemies = [];          
+    enemies = [];
   }
 }
 
@@ -123,9 +173,14 @@ function keyPressed() {
   }
   // ADDED: quick test keys (optional)
   if (gameRunning) {
-    if (key === 'J') player.takeDamage?.(1);   //Damages player for 1
-    if (key === 'K') player.heal?.(1);         //Heals player for 1
+    if (key === 'J') player.takeDamage?.(1); //Damages player for 1
+    if (key === 'K') player.heal?.(1); //Heals player for 1
     if (key === 'L') player.setMaxHP?.(player.maxHP + 1); //increase max HP for 1
+    
+    // --- ADDED: Mana Test Keys ---
+    if (key === 'N' && player.mana > 0) player.mana = max(0, player.mana - 1); // Use 1 mana
+    if (key === 'M' && player.mana < player.maxMana) player.mana = min(player.maxMana, player.mana + 1); // Regen 1 mana
+    // --- END ADDED ---
   }
 }
 

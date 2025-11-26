@@ -12,6 +12,27 @@ function resetLevel() {
   levelNumber = -1;
 }
 
+// --- Helper function to tile an image ---
+function tileImage(img, x, y, w, h) {
+  imageMode(CORNER);
+  noStroke();
+  // Use gridSize for tile size to match the game's scale
+  const tileS = gridSize;
+
+  for (let i = x; i < x + w; i += tileS) {
+    for (let j = y; j < y + h; j += tileS) {
+      // Calculate width/height for edge tiles
+      let currentW = min(tileS, (x + w) - i);
+      let currentH = min(tileS, (y + h) - j);
+
+      // Draw the cropped portion of the source image
+      // This correctly handles partial tiles at the edges
+      image(img, i, j, currentW, currentH, 0, 0, img.width * (currentW / tileS), img.height * (currentH / tileS));
+    }
+  }
+}
+// --- END HELPER ---
+
 function border() {
   gridSize = Math.min(windowWidth, windowHeight) / 20; // Base grid cell size
   const gridPixels = gridSize * 16;
@@ -19,19 +40,28 @@ function border() {
   const offsetX = (windowWidth - gridPixels) / 2;
   const offsetY = (windowHeight - gridPixels) / 2;
 
+  // --- MODIFIED: Fill borders with wall texture ---
+  // We replace the black 'rect()' calls with 'tileImage()'
+  
+  // Note: tileImage() sets its own imageMode and noStroke,
+  // so we don't need fill() or rectMode() here.
+  
+  tileImage(imgWall, 0, 0, windowWidth, offsetY); // Top border
+  tileImage(imgWall, 0, windowHeight - offsetY, windowWidth, offsetY); // Bottom border
+  tileImage(imgWall, 0, 0, offsetX, windowHeight); // Left border
+  tileImage(imgWall, windowWidth - offsetX, 0, offsetX, windowHeight); // Right border
+  // --- END MODIFIED ---
+
+  // Draw a clean black outline around the play area
   stroke(0);
-  fill('black');
+  strokeWeight(4); // Make it slightly thick
+  noFill();
   rectMode(CORNER);
-
-  rect(0, 0, windowWidth, offsetY);
-  rect(0, windowHeight - offsetY, windowWidth, offsetY);
-  rect(0, 0, offsetX, windowHeight);
-  rect(windowWidth - offsetX, 0, offsetX, windowHeight);
-
-  fill
+  rect(offsetX - 2, offsetY - 2, gridPixels + 4, gridPixels + 4);
 }
 
 function drawGrid() {
+  // This function is no longer called, but we leave it here
   gridSize = Math.min(windowWidth, windowHeight) / 20;
   const gridPixels = gridSize * 16;
   const offsetX = (windowWidth - gridPixels) / 2;
@@ -226,23 +256,41 @@ class Cell {
     );
   }
 
+  // --- MODIFIED: show() method to draw sprites ---
   show() {
     gridSize = Math.min(windowWidth, windowHeight) / 20;
-    rectMode(CORNER);
 
+    // --- Temporary tan floor ---
+    if (this.type === "floor") {
+      rectMode(CORNER);
+      fill(210, 180, 140); // A tan color
+      noStroke(); 
+      rect(this.x, this.y, gridSize, gridSize);
+      // --- End temporary floor ---
+
+    }
+    
+
+    // --- Draw specifics on top ---
     if (this.type === "wall") {
-      fill("black");
-      square(this.x, this.y, gridSize);
+      // **Now draw the wall on TOP of the tan floor**
+      imageMode(CORNER); // Set imageMode for the wall
+      image(imgWall, this.x, this.y, gridSize, gridSize);
+
     } else if (this.type === "exit") {
+      // Draw a semi-transparent color overlay on top of the floor
+      rectMode(CORNER);
       if (enemies.length > 0) {
-        fill("yellow")
+        fill(255, 255, 0, 150); // Semi-transparent yellow
       }
       if (enemies.length == 0) {
-        fill("green");
+        fill(0, 255, 0, 150); // Semi-transparent green
       }
+      
+      noStroke();
       square(this.x, this.y, gridSize);
     }
+    // 'floor' and 'entrance' types will just show the tan floor
   }
-
+  // --- END MODIFIED ---
 }
-
