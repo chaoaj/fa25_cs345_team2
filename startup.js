@@ -199,6 +199,13 @@ function keyPressed() {
       magicProjectiles.push(new MagicProjectile(player.x, player.y, player.direction));
     }
     // --- END MODIFIED ---
+
+    if (key === 'h' || key === 'H') {
+      if (!castHealSpell(player)) {
+        console.log("Heal spell failed: not enough mana or HP full.");
+      }
+    }
+
   }
 }
 
