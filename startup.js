@@ -4,6 +4,7 @@ let transitioning = false;
 let transitionAlpha = 0;
 let transitionTimer = 0;
 let dead = false;
+let magicProjectiles = [];
 
 // --- Sprite variables ---
 let spritesheet, imgWall, imgFloor;
@@ -96,6 +97,17 @@ function draw() {
     }
   }
 
+  for (let i = magicProjectiles.length - 1; i >= 0; i--) {
+    let p = magicProjectiles[i];
+    if (!transitioning) {
+      p.update();
+    }
+    p.draw();
+    if (!p.active) {
+      magicProjectiles.splice(i, 1);
+    }
+  }
+
   // --- Player draw/update ---
   player.base();
   player.item.drawAttack(player.x, player.y, player.direction); // <-- This will now draw the sprite
@@ -177,10 +189,16 @@ function keyPressed() {
     if (key === 'K') player.heal?.(1); //Heals player for 1
     if (key === 'L') player.setMaxHP?.(player.maxHP + 1); //increase max HP for 1
     
-    // --- ADDED: Mana Test Keys ---
+    // --- MODIFIED: Mana Keys ---
     if (key === 'N' && player.mana > 0) player.mana = max(0, player.mana - 1); // Use 1 mana
-    if (key === 'M' && player.mana < player.maxMana) player.mana = min(player.maxMana, player.mana + 1); // Regen 1 mana
-    // --- END ADDED ---
+    
+    // REPLACE the old 'M' key logic with this:
+    const manaCost = 1; // Define the cost of one shot
+    if (key === 'M' || key === 'm' && player.mana >= manaCost) {
+      player.mana -= manaCost; // Subtract mana
+      magicProjectiles.push(new MagicProjectile(player.x, player.y, player.direction));
+    }
+    // --- END MODIFIED ---
   }
 }
 

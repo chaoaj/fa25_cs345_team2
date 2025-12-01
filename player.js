@@ -17,6 +17,8 @@ class Player {
     // --- Initialized Mana ---
     this.mana = 10;
     this.maxMana = 10;
+    // --- ADDED: Mana Regeneration Rate ---
+    this.manaRegenRate = 0.5; // Regenerates 2 mana per second
     // --- END ---
     
     this.stunTimer = 0; // Timer to prevent movement after being hit
@@ -46,20 +48,21 @@ class Player {
     // 1. Get the column (sx) from the animation frame
     let sx = this.animFrame * this.spriteWidth;
 
-    // 2. Get the row (sy) from the player's direction
-    // (Based on your player.png layout: 0=Up, 1=Down, 2=Left, 3=Right)
+    // --- MODIFIED: Corrected Row (sy) Mapping ---
+    // (Based on your player.png layout: 0=Right, 1=Left, 2=Down, 3=Up)
     let sy = 0;
     if (this.direction.includes('left')) {
-      sy = 2 * this.spriteHeight; // Row 2
+      sy = 1 * this.spriteHeight; // Row 1 is Left
     } else if (this.direction.includes('right')) {
-      sy = 3 * this.spriteHeight; // Row 3
+      sy = 0 * this.spriteHeight; // Row 0 is Right
     } else if (this.direction === 'up') {
-      sy = 0 * this.spriteHeight; // Row 0
+      sy = 3 * this.spriteHeight; // Row 3 is Up (facing away)
     } else if (this.direction === 'down') {
-      sy = 1 * this.spriteHeight; // Row 1
+      sy = 2 * this.spriteHeight; // Row 2 is Down (facing camera)
     } else {
-      sy = 1 * this.spriteHeight; // Default to 'down'
+      sy = 2 * this.spriteHeight; // Default to 'down'
     }
+    // --- END MODIFIED ---
 
     // 3. Draw the specific sprite
     imageMode(CENTER);
@@ -81,6 +84,13 @@ class Player {
       return; // Skip all movement logic if stunned
     }
     // --- END Stun Check ---
+    
+    // --- ADDED: Mana Regeneration Logic ---
+    if (this.mana < this.maxMana) {
+      this.mana += this.manaRegenRate * (deltaTime / 1000);
+      if (this.mana > this.maxMana) this.mana = this.maxMana;
+    }
+    // --- END ADDED ---
 
 
     gridSize = Math.min(windowWidth, windowHeight) / 20;
@@ -108,8 +118,6 @@ class Player {
 
     // --- MODIFIED: Animation & Direction Logic ---
     if (dx !== 0 || dy !== 0) {
-      // 1. Set Direction (based on raw -1, 0, 1 input)
-      //    (Moved this before normalization to fix diagonal direction bug)
       if (dx === 1) this.direction = 'right';
       if (dx === -1) this.direction = 'left';
       if (dy === -1) this.direction = 'up';
@@ -119,19 +127,13 @@ class Player {
       if (dx < 0 && dy > 0) this.direction = 'downleft';
       if (dx < 0 && dy < 0) this.direction = 'upleft';
 
-      // 2. Update Animation Frame
       this.animTimer += deltaTime / 1000;
       if (this.animTimer > this.animSpeed) {
         this.animTimer = 0;
-        // Cycle between frame 0 and 2 for walking
         this.animFrame = (this.animFrame === 0) ? 2 : 0;
       }
 
-      // 3. Normalize for Movement
-      // --- THIS IS THE FIX ---
       let length = Math.sqrt(dx * dx + dy * dy);
-      // --- END FIX ---
-      
       dx /= length;
       dy /= length;
 
@@ -146,27 +148,42 @@ class Player {
         this.y = nextY;
       }
     } else {
-      // Not moving
-      this.animFrame = 1; // Set to idle frame (middle sprite)
+      this.animFrame = 1;
       this.animTimer = 0;
     }
     // --- END MODIFIED ---
 
 
-    // Boundary limits
-    const minX = offsetX + this.playerSize / 2;
-    const maxX = offsetX + gridPixels - this.playerSize / 2;
-    const minY = offsetY + this.playerHeight / 2;
-    const maxY = offsetY + gridPixels - this.playerHeight / 2;
+    // --- MODIFIED: Border Collision Logic ---
+    // Recalculate hitbox dimensions based on collidesWithWall for consistency
+    const spriteW = this.playerSize;
+    const spriteH = this.playerHeight;
+
+    const hitboxW = spriteW * 0.8;
+    const hitboxH = spriteH * 0.2; 
+
+    const hitboxHalfW = hitboxW / 2;
+    const hitboxHalfH = hitboxH / 2;
+    
+    // Vertical offset calculation
+    const hitboxCenterOffsetY = spriteH / 2 - hitboxHalfH;
+    
+    // X limits are straightforward (use shrunken width)
+    const minX = offsetX + hitboxHalfW;
+    const maxX = offsetX + gridPixels - hitboxHalfW;
+    
+    // Y limits are adjusted based on the new collision box center and size:
+    // minY: Player's Y center when the hitbox top edge touches the top border.
+    const minY = offsetY - hitboxCenterOffsetY + hitboxHalfH;
+    
+    // maxY: Player's Y center when the hitbox bottom edge touches the bottom border.
+    const maxY = (offsetY + gridPixels) - hitboxCenterOffsetY - hitboxHalfH;
 
     if (this.x < minX) this.x = minX;
     if (this.x > maxX) this.x = maxX;
     if (this.y < minY) this.y = minY;
     if (this.y > maxY) this.y = maxY;
-
-    // --- REMOVED: Old Direction Logic ---
-    // (It's now inside the `if (dx !== 0)` block)
-    // --- END REMOVED ---
+    // --- END MODIFIED BORDER LIMITS ---
 
 
     for (let i = 0; i < cells.cells.length; i++) {
@@ -184,18 +201,34 @@ class Player {
 
   collidesWithWall(nextX, nextY) {
     gridSize = Math.min(windowWidth, windowHeight) / 20;
-    let halfW = this.playerSize / 2;
-    let halfH = this.playerHeight / 2;
+
+    // --- MODIFIED: Use a smaller, offset hitbox for the 'feet' area ---
+    const spriteW = this.playerSize; 
+    const spriteH = this.playerHeight; 
+
+    const hitboxW = spriteW * 0.8; 
+    const hitboxH = spriteH * 0.2; 
+
+    const hitboxHalfW = hitboxW / 2;
+    const hitboxHalfH = hitboxH / 2;
+
+    // Calculate the vertical offset to center the hitbox near the bottom of the sprite.
+    const hitboxCenterOffsetY = spriteH / 2 - hitboxHalfH;
+
+    // Calculate the actual center point of the NEW, smaller collision box
+    const hitboxY_center = nextY + hitboxCenterOffsetY; // Shift the collision center down!
 
     for (let i = 0; i < cells.cells.length; i++) {
       for (let j = 0; j < cells.cells[i].length; j++) {
         let cell = cells.cells[i][j];
         if (cell.isWall()) {
           if (
-            nextX + halfW > cell.x &&
-            nextX - halfW < cell.x + gridSize &&
-            nextY + halfH > cell.y &&
-            nextY - halfH < cell.y + gridSize
+            // Check X-axis using new dimensions
+            nextX + hitboxHalfW > cell.x &&
+            nextX - hitboxHalfW < cell.x + gridSize &&
+            // Check Y-axis using the new center and half-height
+            hitboxY_center + hitboxHalfH > cell.y &&
+            hitboxY_center - hitboxHalfH < cell.y + gridSize
           ) {
             return true;
           }
@@ -203,6 +236,7 @@ class Player {
       }
     }
     return false;
+    // --- END MODIFIED ---
   }
 
   finishRoomTransition() {
