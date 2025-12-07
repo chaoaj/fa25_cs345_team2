@@ -6,6 +6,9 @@ let transitionTimer = 0;
 let dead = false;
 let magicProjectiles = [];
 
+// --- Sound variables ---
+let applesound, swingsound, fireballsound, healsound, footstepsound;
+
 // --- Sprite variables ---
 let spritesheet, imgWall, imgFloor;
 let imgPlayerSheet;
@@ -53,7 +56,12 @@ function setup() {
     imgHPBarFill = imgHUDSheet.get(0, barH * 2, barW, barH);
     imgMPBarFill = imgHUDSheet.get(0, barH * 3, barW, barH);
   }
-  // --- END ADDED ---
+    // --- Load Sounds ---
+  applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
+  swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
+  fireballsound = loadSound('libraries/Assets/Sounds/magical-fireball-whoosh-SBA-300156509.mp3');
+  healsound = loadSound('libraries/Assets/Sounds/ascend-flutter-SBA-300148979.mp3');
+  footstepsound = loadSound('libraries/Assets/Sounds/fast-footsteps.mp3');
 }
 
 function draw() {
