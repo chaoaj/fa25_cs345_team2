@@ -201,9 +201,9 @@ function keyPressed() {
     // --- END MODIFIED ---
 
     if (key === 'h' || key === 'H') {
-      if (!castHealSpell(player)) {
-        console.log("Heal spell failed: not enough mana or HP full.");
-      }
+      if (!player.castHealSpell()) {
+  console.log("Heal spell failed: not enough mana or HP full.");
+}
     }
 
   }
