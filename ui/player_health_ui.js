@@ -130,6 +130,9 @@
     
     // Draw the GOLD FRAME on top
     image(imgHPBarFrame, barX, barY_HP, barW, barH);
+
+    this.drawHealCooldown();
+
   };
   // --- END MODIFIED ---
 
