@@ -189,7 +189,19 @@ function mousePressed() {
 
 function keyPressed() {
   if (keyCode === 32 && gameRunning) {
-    player.attack();
+    attack() {
+    if (this.item.getType() === "sword") {
+
+    // --- PLAY SWORD SWING SOUND ---
+    if (swingsound && swingsound.isLoaded()) {
+      swingsound.stop();   // ensures clean restart
+      swingsound.play();
+    }
+
+    this.item.swordAttack(this.x, this.y, this.direction);
+  }
+}
+
   }
   // ADDED: quick test keys (optional)
   if (gameRunning) {
