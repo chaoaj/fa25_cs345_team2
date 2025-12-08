@@ -33,6 +33,12 @@ Player.prototype.castHealSpell = function () {
   this.mana -= HEAL_SPELL_COST;
   this.heal(HEAL_SPELL_AMOUNT);
 
+  // --- PLAY HEAL SOUND ---
+  if (healsound && healsound.isLoaded()) {
+    healsound.stop();        // ensures clean restart
+    healsound.play();
+  }
+
   // --- Start cooldown ---
   this._lastHealCastTime = now;
 

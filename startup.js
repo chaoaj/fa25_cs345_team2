@@ -62,6 +62,7 @@ function setup() {
   fireballsound = loadSound('libraries/Assets/Sounds/magical-fireball-whoosh-SBA-300156509.mp3');
   healsound = loadSound('libraries/Assets/Sounds/ascend-flutter-SBA-300148979.mp3');
   footstepsound = loadSound('libraries/Assets/Sounds/fast-footsteps.mp3');
+    footstepsound.setVolume(0.2);
 }
 
 function draw() {
@@ -169,6 +170,11 @@ function draw() {
 }
 
 function mousePressed() {
+  
+  if (getAudioContext().state !== 'running') {
+    getAudioContext().resume();
+  }
+  
   if (!gameRunning || dead) {
     gameRunning = true;
     dead = false;
@@ -188,20 +194,16 @@ function mousePressed() {
 
 
 function keyPressed() {
-  if (keyCode === 32 && gameRunning) {
-    player.attack() {
-  if (this.item.getType() === "sword") {
+    if (keyCode === 32 && gameRunning) {
+    // Player swings sword
+    player.attack();
 
-    // Play sword sound FROM THE PLAYER CLASS
+    // Play swing sound
     if (swingsound && swingsound.isLoaded()) {
-      swingsound.stop();
-      swingsound.play();
+        swingsound.stop();
+        swingsound.play();
     }
-
-    this.item.swordAttack(this.x, this.y, this.direction);
-  }
 }
-  }
   // ADDED: quick test keys (optional)
   if (gameRunning) {
     if (key === 'J') player.takeDamage?.(1); //Damages player for 1
@@ -212,11 +214,19 @@ function keyPressed() {
     if (key === 'N' && player.mana > 0) player.mana = max(0, player.mana - 1); // Use 1 mana
     
     // REPLACE the old 'M' key logic with this:
-    const manaCost = 1; // Define the cost of one shot
-    if (key === 'M' || key === 'm' && player.mana >= manaCost) {
-      player.mana -= manaCost; // Subtract mana
-      magicProjectiles.push(new MagicProjectile(player.x, player.y, player.direction));
-    }
+    const manaCost = 1;
+if ((key === 'M' || key === 'm') && player.mana >= manaCost) {
+  player.mana -= manaCost;
+
+  // --- PLAY MAGIC CAST SOUND ---
+  if (fireballsound && fireballsound.isLoaded()) {
+    fireballsound.stop();   // ensures clean restart
+    fireballsound.play();
+  }
+
+  // Create the projectile
+  magicProjectiles.push(new MagicProjectile(player.x, player.y, player.direction));
+}
     // --- END MODIFIED ---
 
     if (key === 'h' || key === 'H') {
@@ -232,8 +242,3 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-function mousePressed() {
-  if (getAudioContext().state !== 'running') {
-    getAudioContext().resume();
-  }
-}

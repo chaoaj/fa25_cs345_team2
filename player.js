@@ -14,6 +14,8 @@ class Player {
     this.direction = 'right';
     this.item = new Weapon("sword");
     
+    this.iswalking = false;
+
     // --- Initialized Mana ---
     this.mana = 10;
     this.maxMana = 10;
@@ -116,8 +118,19 @@ class Player {
     if (keyIsDown(65) || keyIsDown(LEFT_ARROW)) dx -= 1;
     if (keyIsDown(68) || keyIsDown(RIGHT_ARROW)) dx += 1;
 
-    // --- MODIFIED: Animation & Direction Logic ---
-    if (dx !== 0 || dy !== 0) {
+    // --- MODIFIED: Animation, Direction, & Footsteps Logic ---
+if (dx !== 0 || dy !== 0) {
+
+      // --- FOOTSTEP SOUND LOGIC ---
+      if (footstepsound && footstepsound.isLoaded()) {
+        if (!footstepsound.isPlaying()) {
+          footstepsound.setLoop(true);
+          footstepsound.play();
+        }
+      }
+      // --- END FOOTSTEP LOGIC ---
+
+      // Direction updates
       if (dx === 1) this.direction = 'right';
       if (dx === -1) this.direction = 'left';
       if (dy === -1) this.direction = 'up';
@@ -127,16 +140,19 @@ class Player {
       if (dx < 0 && dy > 0) this.direction = 'downleft';
       if (dx < 0 && dy < 0) this.direction = 'upleft';
 
+      // Walking animation
       this.animTimer += deltaTime / 1000;
       if (this.animTimer > this.animSpeed) {
         this.animTimer = 0;
         this.animFrame = (this.animFrame === 0) ? 2 : 0;
       }
 
+      // Normalize movement vector
       let length = Math.sqrt(dx * dx + dy * dy);
       dx /= length;
       dy /= length;
 
+      // Apply movement if no wall
       let nextX = this.x + dx * this.speed;
       let nextY = this.y + dy * this.speed;
 
@@ -147,10 +163,19 @@ class Player {
       if (!this.collidesWithWall(this.x, nextY)) {
         this.y = nextY;
       }
-    } else {
+
+} else {
+
+      // --- STOP FOOTSTEPS WHEN NOT MOVING ---
+      if (footstepsound && footstepsound.isPlaying()) {
+        footstepsound.stop();
+      }
+      // --- END FOOTSTEP LOGIC ---
+
+      // Idle animation frame
       this.animFrame = 1;
       this.animTimer = 0;
-    }
+}
     // --- END MODIFIED ---
 
 
