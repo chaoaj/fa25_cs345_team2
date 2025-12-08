@@ -16,7 +16,7 @@ let imgWeaponSheet;
 
 // --- ADDED: HUD Sprite Variables ---
 let imgHUDSheet;
-let imgHPBarFrame, imgMPBarFrame, imgHPBarFill, imgMPBarFill;
+let imgHPBarFrame, imgMPBarFrame, imgHPBarFill, imgMPBarFill, imgHPBarBack, imgMPBarBack;
 // --- END ADDED ---
 
 // --- Preload function ---
@@ -51,10 +51,13 @@ function setup() {
     let barW = imgHUDSheet.width;    // Full width
     
     // Get each part of the spritesheet
+    //added bar backs
     imgHPBarFrame = imgHUDSheet.get(0, 0, barW, barH);
     imgMPBarFrame = imgHUDSheet.get(0, barH, barW, barH);
     imgHPBarFill = imgHUDSheet.get(0, barH * 2, barW, barH);
     imgMPBarFill = imgHUDSheet.get(0, barH * 3, barW, barH);
+    imgHPBarBack = imgHUDSheet.get(0, barH * 4, barW, barH);
+    imgMPBarBack = imgHUDSheet.get(0, barH * 5, barW, barH);
   }
     // --- Load Sounds ---
   applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');

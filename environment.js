@@ -27,7 +27,8 @@ function tileImage(img, x, y, w, h) {
 
       // Draw the cropped portion of the source image
       // This correctly handles partial tiles at the edges
-      image(img, i, j, currentW, currentH, 0, 0, img.width * (currentW / tileS), img.height * (currentH / tileS));
+      //modified to proper cropping
+      image(img, i, j, currentW, currentH, 0, 0, img.width * (currentW / tileS) -2 , img.height * (currentH / tileS) -2);
     }
   }
 }
@@ -275,7 +276,8 @@ class Cell {
     if (this.type === "wall") {
       // **Now draw the wall on TOP of the tan floor**
       imageMode(CORNER); // Set imageMode for the wall
-      image(imgWall, this.x, this.y, gridSize, gridSize);
+      //modified to proper size
+      image(imgWall, this.x, this.y, gridSize, gridSize, 0, 0, 30, 30);
 
     } else if (this.type === "exit") {
       // Draw a semi-transparent color overlay on top of the floor

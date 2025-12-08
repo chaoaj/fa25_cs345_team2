@@ -100,8 +100,9 @@ class Player {
     const offsetX = (windowWidth - gridPixels) / 2;
     const offsetY = (windowHeight - gridPixels) / 2;
 
-    this.playerHeight = gridSize * 0.8;
-    this.playerSize = gridSize / 2;
+    //fixed player size to match sprites
+    this.playerHeight = gridSize * 0.9;
+    this.playerSize = gridSize * 0.7;
 
     let dx = 0;
     let dy = 0;
@@ -144,7 +145,8 @@ if (dx !== 0 || dy !== 0) {
       this.animTimer += deltaTime / 1000;
       if (this.animTimer > this.animSpeed) {
         this.animTimer = 0;
-        this.animFrame = (this.animFrame === 0) ? 2 : 0;
+        //modified to correct frames
+        this.animFrame = (this.animFrame === 0) ? 1 : 0;
       }
 
       // Normalize movement vector
@@ -293,6 +295,8 @@ if (dx !== 0 || dy !== 0) {
     if (this.item.getType() === "sword") {
       this.item.swordAttack(this.x, this.y, this.direction);
     }
+    //added use animation frame
+    this.animFrame = 2;
   }
 
 }

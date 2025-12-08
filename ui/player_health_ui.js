@@ -87,6 +87,8 @@
       barY_MP = height - margin_bottom - barH; 
       const mpPct = constrain(this._mpVisual / this.maxMana, 0, 1);
 
+      // draw the back of the SILVER FRAME
+      image(imgMPBarBack, barX, barY_MP, barW, barH);
       // Draw the BLUE FILL
       if (mpPct > 0) {
         let mpFillSrcW = imgMPBarFill.width * mpPct;
@@ -116,6 +118,8 @@
 
     const hpPct = constrain(this._hpVisual / this.maxHP, 0, 1);
     
+    // draw the back of the GOLD FRAME
+    image(imgHPBarBack, barX, barY_HP, barW, barH);
     // Draw the RED FILL (cropping the source image)
     if (hpPct > 0) {
       let hpFillSrcW = imgHPBarFill.width * hpPct;
