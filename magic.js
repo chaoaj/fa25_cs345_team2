@@ -70,21 +70,33 @@ class MagicProjectile {
       }
     }
 
-    // Check for Enemy Collisions
-    for (let i = enemies.length - 1; i >= 0; i--) {
-      const e = enemies[i];
-      let d = dist(this.x, this.y, e.x, e.y);
+    // ===============================
+// ENEMY COLLISION HANDLING
+// ===============================
+for (let i = enemies.length - 1; i >= 0; i--) {
+  const e = enemies[i];
 
-      // Simple circle collision check
-      if (d < this.size / 2 + e.size / 2) {
-        e.hp -= this.damage; // Deal damage
-        if (e.hp <= 0) {
-          enemies.splice(i, 1); // Kill enemy
-        }
-        this.active = false;
-        return; // Projectile is spent
-      }
+  // --- SPECIAL: SnakeBoss ---
+  if (e instanceof SnakeBoss) {
+    let hit = e.checkProjectileHit(this.x, this.y, this.size / 2);
+    if (hit) {
+      e.applyDamage(this.damage);
+      this.active = false;
+      return;
     }
+    continue; // skip normal hit logic
+  }
+
+  // --- NORMAL ENEMY HIT LOGIC ---
+  let d = dist(this.x, this.y, e.x, e.y);
+  if (d < this.size / 2 + e.size / 2) {
+    e.hp -= this.damage;
+    if (e.hp <= 0) enemies.splice(i, 1);
+    this.active = false;
+    return;
+  }
+}
+
     
     // Check for Out-of-Bounds (using the main grid boundaries)
     const gridSize = Math.min(windowWidth, windowHeight) / 20;

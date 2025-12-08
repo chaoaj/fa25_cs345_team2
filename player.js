@@ -267,15 +267,23 @@ if (dx !== 0 || dy !== 0) {
   }
 
   finishRoomTransition() {
+    roomCount++;
 
-    cells.create();
-    cells.change();
+    // Check if this is a boss room
+    let isBossRoom = (roomCount % 5 === 0);
+
+    // Create normal room or boss room
+    if (isBossRoom) {
+        createSnakeBossRoom();
+    } else {
+        cells.create();
+        cells.change();
+    }
 
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
     const gridPixels = gridSize * 16;
     const offsetX = (windowWidth - gridPixels) / 2;
     const offsetY = (windowHeight - gridPixels) / 2;
-
 
     if (this.lastExit === "top") {
       this.x = offsetX + 8 * gridSize;
@@ -287,9 +295,7 @@ if (dx !== 0 || dy !== 0) {
       this.x = width / 2;
       this.y = height / 2;
     }
-
-  }
-
+}
 
   attack() {
     if (this.item.getType() === "sword") {

@@ -5,6 +5,9 @@ let transitionAlpha = 0;
 let transitionTimer = 0;
 let dead = false;
 let magicProjectiles = [];
+let roomCount = 0;
+let inBossRoom = false;
+let player = null;
 
 // --- Sound variables ---
 let applesound, swingsound, fireballsound, healsound, footstepsound;
@@ -69,8 +72,21 @@ function setup() {
 }
 
 function draw() {
-  // MODIFIED: Changed background to black for a better border look
   background(0);
+
+  // MUST BE FIRST
+  if (player === null || !gameRunning) {
+    textSize(50);
+    fill('white');
+    textAlign(CENTER, CENTER);
+    text("Click to Start!", width / 2, height / 2);
+    return;
+  }
+
+  if (!dead && player.hp == 0) {
+    dead = true;
+  }
+
 
   if (!gameRunning) {
     textSize(50);
@@ -183,6 +199,7 @@ function mousePressed() {
     dead = false;
 
     firstRoom = true;
+    roomCount = 0
     resetLevel();
 
     player = new Player();
@@ -245,3 +262,17 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
+function createSnakeBossRoom() {
+    console.log("Entering BOSS ROOM!");
+
+    // Clear old room
+    enemies = [];
+
+    // Make a big open arena:
+    cells = new Cells();
+    cells.create();
+    cells.clearInterior();   // Removes walls (I can write this method if needed)
+    
+    // Spawn the snake boss in the middle
+    enemies.push(new SnakeBoss(width / 2, height / 2));
+}
