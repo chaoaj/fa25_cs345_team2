@@ -115,6 +115,10 @@ class Cells {
       case "first":
         break;
 
+      case "bossRoom": 
+         // An empty room for the boss
+         break;
+
       case "cross":
         for (let i = 3; i < 13; i++) {
           this.cells[8][i].setType("wall");
@@ -202,29 +206,49 @@ class Cells {
   }
 
   change() {
-  if (firstRoom) {
-    for (let x = 0; x < 16; x++) {
-      for (let y = 0; y < 16; y++) {
-        this.cells[x][y].setType("floor");
+    if (firstRoom) {
+      for (let x = 0; x < 16; x++) {
+        for (let y = 0; y < 16; y++) {
+          this.cells[x][y].setType("floor");
+        }
       }
+      this.loadLayout("first");
+      firstRoom = false;
+      return;
     }
-    this.loadLayout("first");
-    firstRoom = false;
-    return;
+
+    // --- BOSS SPAWN LOGIC ---
+    // Check if the NEXT level (levelNumber + 1 effectively, since loadLayout increments it) 
+    // is a multiple of 10.
+    
+    // Note: levelNumber is incremented inside loadLayout, so we check current levelNumber + 1
+    // OR we just assume if levelNumber (after increment) % 10 == 0.
+    
+    // Let's check logic:
+    // loadLayout() does: levelNumber++. 
+    // So if current is 9, loadLayout makes it 10.
+    // We want the 10th room to be a boss.
+    
+    // We need to pick the layout first.
+    let isBossLevel = (levelNumber + 1) > 0 && (levelNumber + 1) % 10 === 0;
+
+    if (isBossLevel) {
+       this.loadLayout("bossRoom"); // Load an empty room
+       enemies = [];
+       enemies.push(new SnakeBoss(levelNumber)); // Add the Boss to the enemy list
+       return; 
+    }
+    // ------------------------
+
+    const layouts = ["cross", "apartments", "deuce", "deuceInv"];
+    const valueToRemove = this.layout;
+
+    const newLayouts = layouts.filter(item => item !== valueToRemove);
+    const chosen = random(newLayouts);
+    this.loadLayout(chosen);
+    spawnEnemiesForLevel(chosen);
+
   }
-
-
-
-  const layouts = ["cross", "apartments", "deuce", "deuceInv"];
-  const valueToRemove = this.layout;
-
-  const newLayouts = layouts.filter(item => item !== valueToRemove);
-  const chosen = random(newLayouts);
-  this.loadLayout(chosen);
-  spawnEnemiesForLevel(chosen);
-
-}
-
 }
 
 // ✅ Correct — put this AFTER the class Cells { } closes

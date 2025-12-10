@@ -20,7 +20,7 @@ class Player {
     this.mana = 10;
     this.maxMana = 10;
     // --- ADDED: Mana Regeneration Rate ---
-    this.manaRegenRate = 0.5; // Regenerates 2 mana per second
+    this.manaRegenRate = 1; // Regenerates mana per second
     // --- END ---
     
     this.stunTimer = 0; // Timer to prevent movement after being hit
