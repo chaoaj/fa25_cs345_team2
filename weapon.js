@@ -57,37 +57,64 @@ class Weapon {
     const startAngle = centerAngle - halfArc;
     const endAngle = centerAngle + halfArc;
 
+    // Grid constants needed for checking segmented enemies like SnakeBoss
+    const gridSize = Math.min(windowWidth, windowHeight) / 20;
+    const gridPixels = gridSize * 16;
+    const offsetX = (windowWidth - gridPixels) / 2;
+    const offsetY = (windowHeight - gridPixels) / 2;
+
+    const s = this.normalizeAngle(startAngle);
+    const eA = this.normalizeAngle(endAngle);
+
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
-
-      // Boss special logic
-      if (typeof e.checkSwordHit === "function") {
-        if (e.checkSwordHit(x, y, r, startAngle, endAngle)) {
-          e.applyDamage(5);
+      let targets = [];
+      let isSegmented = e.segments && e.segments.length > 0;
+      
+      // --- MODIFIED LOGIC: Get all hit targets (segments or center) ---
+      if (isSegmented) {
+        // If it's the Snake Boss, check all segments
+        for (let seg of e.segments) {
+          // Convert grid coords to screen coords
+          const segX = offsetX + seg.x * gridSize + gridSize / 2;
+          const segY = offsetY + seg.y * gridSize + gridSize / 2;
+          // Segments are treated as a circle with half a grid square radius
+          targets.push({ x: segX, y: segY, radius: gridSize / 2 });
         }
-        continue;
+      } else {
+        // Normal enemy (use its center x/y)
+        targets.push({ x: e.x, y: e.y, radius: e.size / 2 });
       }
 
-      // Normal enemy logic
-      const dx = e.x - x;
-      const dy = e.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      let hit = false;
+      for (const target of targets) {
+        const dx = target.x - x;
+        const dy = target.y - y;
+        const distToTarget = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < r) {
-        const angle = this.normalizeAngle(atan2(dy, dx));
-        const s = this.normalizeAngle(startAngle);
-        const eA = this.normalizeAngle(endAngle);
+        // Check if the target is within the sword's range (r + target's radius)
+        if (distToTarget < r + target.radius) {
+          const angle = this.normalizeAngle(atan2(dy, dx));
 
-        const inArc = (s < eA)
-          ? angle >= s && angle <= eA
-          : angle >= s || angle <= eA;
+          // Check if the target is within the sword's arc
+          const inArc = (s < eA)
+            ? angle >= s && angle <= eA
+            : angle >= s || angle <= eA;
 
-        if (inArc) {
-          e.hp -= 5;
-          if (e.hp <= 0) enemies.splice(i, 1);
+          if (inArc) {
+            hit = true;
+            break; // Segment/Enemy hit, break the target loop
+          }
         }
+      }
+
+      if (hit) {
+        e.hp -= 5;
+        e.takeDamage?.(0); // Trigger damage flash
+        if (e.hp <= 0) enemies.splice(i, 1);
       }
     }
+    // --- END MODIFIED LOGIC ---
 
     setTimeout(() => this.active = false, this.attackDuration * 1000);
   }
