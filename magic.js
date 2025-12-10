@@ -79,6 +79,7 @@ for (let i = enemies.length - 1; i >= 0; i--) {
   const e = enemies[i];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // --- SPECIAL: SnakeBoss ---
   if (e instanceof SnakeBoss) {
     let hit = e.checkProjectileHit(this.x, this.y, this.size / 2);
@@ -87,6 +88,8 @@ for (let i = enemies.length - 1; i >= 0; i--) {
       this.active = false;
       return;
 =======
+=======
+>>>>>>> Stashed changes
       if (d < this.size / 2 + e.size / 2) {
         e.hp -= this.damage; 
         e.takeDamage?.(0); // Trigger flash if method exists

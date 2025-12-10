@@ -25,6 +25,7 @@ class Enemy {
     this.velocityY = 0;
     this.acceleration = 0.1; 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     // --- ADDED: Sprite & Animation Properties ---
     this.spriteWidth = 80; // The width of one sprite frame in slimes.png
@@ -74,6 +75,24 @@ class Enemy {
   }
 
   draw() {
+=======
+    
+    // --- Visual Properties ---
+    // Pick a random slime color (0 to 3)
+    this.colorVariant = floor(random(0, 4));
+    this.animFrame = 0;
+    this.animTimer = 0;
+    this.damageTimer = 0; // For damage flash
+  }
+
+  // --- Trigger Flash Method ---
+  takeDamage(amount) {
+    this.hp = max(0, this.hp - amount);
+    this.damageTimer = 0.1; // Flash red for 0.1 seconds
+  }
+
+  draw() {
+>>>>>>> Stashed changes
     // Slime/Zombie Sprite Logic
     if (this.species === "zombie" && slimeSprites.length > 0) {
       
@@ -121,6 +140,9 @@ class Enemy {
       // Fallback for unknown enemies
       fill(this.state === "chase" ? "orange" : "red");
       ellipse(this.x, this.y, this.size);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
   }

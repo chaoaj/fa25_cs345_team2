@@ -6,12 +6,16 @@ let transitionTimer = 0;
 let dead = false;
 let magicProjectiles = [];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 let roomCount = 0;
 let inBossRoom = false;
 let player = null;
 
 // --- Sound variables ---
 let applesound, swingsound, fireballsound, healsound, footstepsound;
+=======
+let snakeGame; 
+>>>>>>> Stashed changes
 =======
 let snakeGame; 
 >>>>>>> Stashed changes
@@ -24,6 +28,7 @@ let imgSlimes;
 
 // --- HUD Sprite Variables ---
 let imgHUDSheet;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 let imgHPBarFrame, imgMPBarFrame, imgHPBarFill, imgMPBarFill, imgHPBarBack, imgMPBarBack;
 // --- END ADDED ---
@@ -40,6 +45,19 @@ let noodleSprites = {};
 let imgFireballSheet;
 let redFireFrames = []; 
 
+=======
+let imgHPBarFrame, imgMPBarFrame, imgHPBarFill, imgMPBarFill;
+
+// --- Enemy & Boss Sprites ---
+let imgSlimeSheet, imgNoodleSheet;
+let slimeSprites = []; 
+let noodleSprites = {}; 
+
+// --- Magic Sprites ---
+let imgFireballSheet;
+let redFireFrames = []; 
+
+>>>>>>> Stashed changes
 function preload() {
   // Environment
   spritesheet = loadImage('libraries/Assets/Enviroment/enviroment.png');
@@ -48,11 +66,15 @@ function preload() {
   // Weapon
   imgWeaponSheet = loadImage('libraries/Assets/Player/Key-Blade.png');
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
   // Enemy spritesheet
   imgSlimes = loadImage('libraries/Assets/Enemies/slimes.png');
   
   // --- ADDED: Load the HUD spritesheet ---
+=======
+  // HUD
+>>>>>>> Stashed changes
 =======
   // HUD
 >>>>>>> Stashed changes
@@ -76,11 +98,16 @@ function setup() {
   // HUD Slicing
   if (imgHUDSheet) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     let barH = imgHUDSheet.height / 6; // Height of one bar row
     let barW = imgHUDSheet.width;    // Full width
     
     // Get each part of the spritesheet
     //added bar backs
+=======
+    let barH = imgHUDSheet.height / 6;
+    let barW = imgHUDSheet.width;
+>>>>>>> Stashed changes
 =======
     let barH = imgHUDSheet.height / 6;
     let barW = imgHUDSheet.width;
@@ -93,6 +120,7 @@ function setup() {
     imgMPBarBack = imgHUDSheet.get(0, barH * 5, barW, barH);
   }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     // --- Load Sounds ---
   applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
   swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
@@ -101,6 +129,8 @@ function setup() {
   footstepsound = loadSound('libraries/Assets/Sounds/fast-footsteps.mp3');
     footstepsound.setVolume(0.2);
 =======
+=======
+>>>>>>> Stashed changes
 
   // Slime Slicing
   if (imgSlimeSheet) {
@@ -139,6 +169,9 @@ function setup() {
     redFireFrames.push(imgFireballSheet.get(2 * fw, 2 * fh, fw, fh)); // (2,2)
   }
   // --- END MODIFIED ---
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 
@@ -284,6 +317,7 @@ function keyPressed() {
     // Player swings sword
     player.attack();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     // Play swing sound
     if (swingsound && swingsound.isLoaded()) {
@@ -336,6 +370,27 @@ if ((key === 'M' || key === 'm') && player.mana >= manaCost) {
       }
 >>>>>>> Stashed changes
     }
+=======
+  }
+  if (gameRunning) {
+    if (key === 'J') player.takeDamage?.(1); 
+    if (key === 'K') player.heal?.(1); 
+    if (key === 'L') player.setMaxHP?.(player.maxHP + 1); 
+    
+    if (key === 'N' && player.mana > 0) player.mana = max(0, player.mana - 1); 
+    
+    const manaCost = 1; 
+    if (key === 'M' || key === 'm' && player.mana >= manaCost) {
+      player.mana -= manaCost;
+      magicProjectiles.push(new MagicProjectile(player.x, player.y, player.direction));
+    }
+
+    if (key === 'h' || key === 'H') {
+      if (player.castHealSpell && !player.castHealSpell()) {
+        console.log("Heal spell failed.");
+      }
+    }
+>>>>>>> Stashed changes
   }
 }
 
