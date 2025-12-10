@@ -29,6 +29,7 @@ class Enemy {
     this.colorVariant = floor(random(0, 4)); // slime color
     this.animFrame = 0;
     this.animTimer = 0;
+    this.animSpeed = 0.5; // seconds per frame
     this.damageTimer = 0; // damage flash timer
   }
 
@@ -48,10 +49,11 @@ class Enemy {
 
       // Animate slime
       this.animTimer += deltaTime / 1000;
-      if (this.animTimer > 0.5) {
+      if (this.animTimer > this.animSpeed) {
         this.animTimer = 0;
         this.animFrame = (this.animFrame + 1) % 2;
       }
+      this.animSpeed = (this.state === "chase") ? 0.3 : 0.5;
 
       let sprite = slimeSprites[this.colorVariant][this.animFrame];
 
@@ -65,7 +67,7 @@ class Enemy {
       else noTint();
 
       if (sprite) {
-        image(sprite, 0, 0, this.size, this.size);
+        image(sprite, 0, 0, this.size + gridSize * 0.1, this.size);
       } else {
         fill(255, 0, 0);
         ellipse(0, 0, this.size);
