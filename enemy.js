@@ -24,6 +24,7 @@ class Enemy {
     this.velocityX = 0;
     this.velocityY = 0;
     this.acceleration = 0.1; 
+<<<<<<< HEAD
     
     // --- Visual Properties ---
     // Pick a random slime color (0 to 3)
@@ -91,6 +92,8 @@ class Enemy {
       fill(this.state === "chase" ? "orange" : "red");
       ellipse(this.x, this.y, this.size);
     }
+=======
+>>>>>>> parent of 7b28b63 (slimesprite)
   }
 
   draw() {
