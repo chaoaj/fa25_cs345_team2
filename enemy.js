@@ -11,19 +11,21 @@ class Enemy {
     this.speed = speed;
 
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
-    this.size = gridSize * 0.5;
+    this.size = gridSize * 0.8; // Slightly larger sprite
 
     this.state = "wander"; // "wander" | "chase" | "search"
     this.targetX = x;
     this.targetY = y;
     this.wanderTimer = 0;
-    this.memoryTimer = 0; // remembers player for short time
+    this.memoryTimer = 0;
 
-    this.attackCooldown = 0; // Cooldown for player damage
+    this.attackCooldown = 0;
 
     this.velocityX = 0;
     this.velocityY = 0;
     this.acceleration = 0.1; 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     // --- ADDED: Sprite & Animation Properties ---
     this.spriteWidth = 80; // The width of one sprite frame in slimes.png
@@ -56,12 +58,104 @@ class Enemy {
         }
       }
       this.animSpeed = (this.state === "chase") ? 0.25 : 0.5;
+=======
+    
+    // --- Visual Properties ---
+    // Pick a random slime color (0 to 3)
+    this.colorVariant = floor(random(0, 4));
+    this.animFrame = 0;
+    this.animTimer = 0;
+    this.damageTimer = 0; // For damage flash
+  }
+
+  // --- Trigger Flash Method ---
+  takeDamage(amount) {
+    this.hp = max(0, this.hp - amount);
+    this.damageTimer = 0.1; // Flash red for 0.1 seconds
+  }
+
+  draw() {
+=======
+    
+    // --- Visual Properties ---
+    // Pick a random slime color (0 to 3)
+    this.colorVariant = floor(random(0, 4));
+    this.animFrame = 0;
+    this.animTimer = 0;
+    this.damageTimer = 0; // For damage flash
+  }
+
+  // --- Trigger Flash Method ---
+  takeDamage(amount) {
+    this.hp = max(0, this.hp - amount);
+    this.damageTimer = 0.1; // Flash red for 0.1 seconds
+  }
+
+  draw() {
+>>>>>>> Stashed changes
+    // Slime/Zombie Sprite Logic
+    if (this.species === "zombie" && slimeSprites.length > 0) {
+      
+      // Update animation (2 frames, squishy effect)
+      this.animTimer += deltaTime / 1000;
+      if (this.animTimer > 0.5) { // Switch frame every 0.5s
+        this.animTimer = 0;
+        this.animFrame = (this.animFrame + 1) % 2; // 2 animation frames
+      }
+
+      let sprite = slimeSprites[this.colorVariant][this.animFrame];
+
+      push();
+      translate(this.x, this.y);
+      imageMode(CENTER);
+
+      // Flip sprite if moving left
+      if (this.velocityX < 0) {
+        scale(-1, 1);
+      }
+
+      // --- DAMAGE FLASH LOGIC ---
+      if (this.damageTimer > 0) {
+        tint(255, 0, 0); // Turn sprite Red
+      } else {
+        noTint(); // Normal colors
+      }
+
+      if (sprite) {
+        image(sprite, 0, 0, this.size, this.size);
+      } else {
+        // Fallback if sprite slicing failed
+        fill(255, 0, 0); 
+        ellipse(0, 0, this.size);
+      }
+      
+      noTint(); // Reset tint
+      pop();
+
+    } else if (this.species === "snake_boss") {
+      // Handled in snake_boss.js, but if it falls back here:
+      fill(0, 255, 0);
+      ellipse(this.x, this.y, this.size);
+    } else {
+      // Fallback for unknown enemies
+      fill(this.state === "chase" ? "orange" : "red");
+      ellipse(this.x, this.y, this.size);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     }
   }
 
   update() {
     if (this.attackCooldown > 0) {
       this.attackCooldown -= deltaTime / 1000;
+    }
+
+    // Update damage flash timer
+    if (this.damageTimer > 0) {
+      this.damageTimer -= deltaTime / 1000;
+      if (this.damageTimer < 0) this.damageTimer = 0;
     }
 
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
@@ -79,16 +173,14 @@ class Enemy {
     const enemyRadius = this.size / 2;
     const hitDistance = playerRadius + enemyRadius;
 
-    // Check if touching player and cooldown is ready
     if (distance < hitDistance && this.attackCooldown <= 0 && !transitioning) {
       if (player.takeDamage) {
-        player.takeDamage(1); // Deal 1 damage
+        player.takeDamage(1); 
       }
-      this.attackCooldown = 1.5; // Set 1.5 second cooldown
+      this.attackCooldown = 1.5; 
 
-      player.stunTimer = 0.25; // Stun player for 0.25 seconds
+      player.stunTimer = 0.25; 
 
-      // Knockback Logic
       const knockbackStrength = 25; 
       if (distance > 0) {
         const normX = dx / distance;
@@ -104,20 +196,14 @@ class Enemy {
       }
     }
 
-
-    // Check line of sight
+    // AI Logic (Wander/Chase)
     let canSeePlayer = this.hasLineOfSight(player.x, player.y);
 
     if (canSeePlayer && distance < gridSize * 6) {
       this.state = "chase";
-      this.memoryTimer = 2.5; // seconds
-      
-      // --- ADDED: This is the fix! ---
-      // Continuously update the "last known position" while chasing
+      this.memoryTimer = 2.5; 
       this.targetX = player.x;
       this.targetY = player.y;
-      // --- END ADDED ---
-
     } else if (this.memoryTimer > 0) {
       this.state = "search";
       this.memoryTimer -= deltaTime / 1000;
@@ -125,25 +211,22 @@ class Enemy {
       this.state = "wander";
     }
 
-    // --- MODIFIED: Movement Logic ---
-
     let moveX = 0;
     let moveY = 0;
     
-    // Separation Steering
+    // Separation
     let sepX = 0;
     let sepY = 0;
     let separationCount = 0;
-    const desiredSeparation = this.size * 2.0; // Personal space
+    const desiredSeparation = this.size * 1.5;
 
     for (let other of enemies) {
       if (other !== this) {
         let d = dist(this.x, this.y, other.x, other.y);
         if (d > 0 && d < desiredSeparation) {
-          // Calculate vector pointing away from neighbor
           let diffX = this.x - other.x;
           let diffY = this.y - other.y;
-          diffX /= d; // Normalize
+          diffX /= d; 
           diffY /= d;
           sepX += diffX;
           sepY += diffY;
@@ -156,8 +239,6 @@ class Enemy {
       sepY /= separationCount;
     }
 
-
-    // --- Behavior States (now set 'moveX' and 'moveY' as GOALS) ---
     if (this.state === "chase") {
       dx /= distance;
       dy /= distance;
@@ -169,8 +250,6 @@ class Enemy {
       moveX = dx * this.speed * 0.5;
       moveY = dy * this.speed * 0.5;
     } else if (this.state === "search") {
-      // --- THIS LOGIC NOW WORKS! ---
-      // It will move towards the targetX/Y set during the "chase" state
       dx = this.targetX - this.x;
       dy = this.targetY - this.y;
       let len = Math.sqrt(dx * dx + dy * dy);
@@ -181,7 +260,6 @@ class Enemy {
         moveY = dy * this.speed * 0.3;
       }
     } else {
-      // Wander randomly
       this.wanderTimer -= deltaTime / 1000;
       if (this.wanderTimer <= 0) {
         this.targetX = this.x + random(-gridSize * 3, gridSize * 3);
@@ -199,17 +277,13 @@ class Enemy {
       }
     }
     
-    // Combine Goal + Separation
     const separationWeight = 1.0; 
     moveX = moveX + sepX * separationWeight;
     moveY = moveY + sepY * separationWeight;
 
-
-    // Acceleration/Inertia
     this.velocityX = lerp(this.velocityX, moveX, this.acceleration);
     this.velocityY = lerp(this.velocityY, moveY, this.acceleration);
 
-    // --- Move with sliding & bounds (NOW USES VELOCITY) ---
     let nextX = this.x + this.velocityX;
     let nextY = this.y + this.velocityY;
     let blockedX = this.collidesWithWall(nextX, this.y);
@@ -220,12 +294,11 @@ class Enemy {
       this.y = nextY;
     } else if (!blockedX) {
       this.x = nextX;
-      this.velocityY = 0; // Stop vertical movement if hitting wall
+      this.velocityY = 0; 
     } else if (!blockedY) {
       this.y = nextY;
-      this.velocityX = 0; // Stop horizontal movement if hitting wall
+      this.velocityX = 0; 
     } else {
-      // If blocked in both, stop all velocity
       this.velocityX = 0;
       this.velocityY = 0;
     }
@@ -238,20 +311,17 @@ class Enemy {
     this.y = constrain(this.y, minY, maxY);
   }
 
-  // --- Avoidance Helper ---
   findAlternateDirection(dx, dy, gridSize) {
     let bestAngle = null;
     let bestDir = [0, 0];
     let minBlock = Infinity;
 
-    // Try small angles around the current direction
     for (let a = -PI / 3; a <= PI / 3; a += PI / 12) {
       const angle = atan2(dy, dx) + a;
       const testX = this.x + cos(angle) * gridSize * 0.5;
       const testY = this.y + sin(angle) * gridSize * 0.5;
       let blocked = this.collidesWithWall(testX, testY);
       if (!blocked) {
-        // Slightly favor directions closer to the player
         const bias = Math.abs(a);
         if (bias < minBlock) {
           minBlock = bias;
@@ -263,7 +333,6 @@ class Enemy {
     return bestDir;
   }
 
-  // --- Line of sight (Bresenham-style grid check) ---
   hasLineOfSight(targetX, targetY) {
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
     const steps = 10;
@@ -299,7 +368,7 @@ class Enemy {
   }
 }
 
-// 🧟 Global enemy list
+// Global enemy list
 let enemies = [];
 
 function spawnEnemiesForLevel(name) {
