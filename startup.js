@@ -10,8 +10,12 @@ let inBossRoom = false;
 let player = null;
 
 // --- Sound variables ---
+<<<<<<< HEAD
 let applesound, swingsound, fireballsound, healsound, footstepsound, bossmusic;
 let snakeGame; 
+=======
+let applesound, swingsound, fireballsound, healsound, footstepsound;
+>>>>>>> parent of a744aad (commit)
 
 // --- Sprite variables ---
 let spritesheet, imgWall, imgFloor;
@@ -42,6 +46,7 @@ function preload() {
   
   // --- ADDED: Load the HUD spritesheet ---
   imgHUDSheet = loadImage('libraries/Assets/Player/HPMPBar.png');
+<<<<<<< HEAD
 
   applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
   swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
@@ -84,6 +89,8 @@ function stopDungeonMusic() {
 
   // Magic
   imgFireballSheet = loadImage('libraries/Assets/Player/firewall.png');
+=======
+>>>>>>> parent of a744aad (commit)
 }
 
 function setup() {
@@ -107,6 +114,7 @@ function setup() {
     imgHPBarBack = imgHUDSheet.get(0, barH * 4, barW, barH);
     imgMPBarBack = imgHUDSheet.get(0, barH * 5, barW, barH);
   }
+<<<<<<< HEAD
   
   // Slime Slicing
   if (imgSlimeSheet) {
@@ -145,6 +153,15 @@ function setup() {
     redFireFrames.push(imgFireballSheet.get(2 * fw, 2 * fh, fw, fh)); // (2,2)
   }
   // --- END MODIFIED ---
+=======
+    // --- Load Sounds ---
+  applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
+  swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
+  fireballsound = loadSound('libraries/Assets/Sounds/magical-fireball-whoosh-SBA-300156509.mp3');
+  healsound = loadSound('libraries/Assets/Sounds/ascend-flutter-SBA-300148979.mp3');
+  footstepsound = loadSound('libraries/Assets/Sounds/fast-footsteps.mp3');
+    footstepsound.setVolume(0.2);
+>>>>>>> parent of a744aad (commit)
 }
 
 function draw() {
@@ -332,40 +349,16 @@ function windowResized() {
 }
 
 function createSnakeBossRoom() {
-  console.log("Entering BOSS ROOM!");
-  
-  stopDungeonMusic();
+    console.log("Entering BOSS ROOM!");
 
-  enemies = [];
-  cells.create();
-  cells.clearInterior();
-  cells.exitSide = null;
+    // Clear old room
+    enemies = [];
 
-  // Draw arena walls
-  for (let x = 0; x < 16; x++) {
-    cells.cells[x][0].setType("wall");
-    cells.cells[x][15].setType("wall");
-  }
-  for (let y = 0; y < 16; y++) {
-    cells.cells[0][y].setType("wall");
-    cells.cells[15][y].setType("wall");
-  }
-
-  // ⭐ IMPORTANT: Start Music Here
-  if (bossmusic && bossmusic.isLoaded()) {
-    console.log("Starting boss music...");
-    bossmusic.setVolume(0.5);
-    bossmusic.loop();
-  } else {
-    console.warn("Boss music not loaded yet!");
-  }
-
-  // Spawn the boss
-  enemies.push(new SnakeBoss(width / 2, height / 2));
-
-  levelNumber++;
-
-  console.log("BOSS ROOM CREATED, attempting to play music.");
-  console.log("Audio state:", getAudioContext().state);
-
+    // Make a big open arena:
+    cells = new Cells();
+    cells.create();
+    cells.clearInterior();   // Removes walls (I can write this method if needed)
+    
+    // Spawn the snake boss in the middle
+    enemies.push(new SnakeBoss(width / 2, height / 2));
 }
