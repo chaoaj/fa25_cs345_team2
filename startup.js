@@ -297,6 +297,14 @@ function keyPressed() {
       }
   }
 
+  if (key && key.toLowerCase() === "h") {
+    if (player.castHealSpell) {
+        const worked = player.castHealSpell();
+        if (!worked) {
+            console.log("Heal failed: not enough mana or HP already full.");
+          }
+      }
+  }
 
 }
 
