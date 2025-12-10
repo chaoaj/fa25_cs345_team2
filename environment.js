@@ -250,7 +250,6 @@ class Cells {
 
   }
 }
-<<<<<<< Updated upstream
 
 // ✅ Correct — put this AFTER the class Cells { } closes
 Cells.prototype.clearInterior = function () {
@@ -260,8 +259,6 @@ Cells.prototype.clearInterior = function () {
     }
   }
 };
-=======
->>>>>>> Stashed changes
 
 
 class Cell {
