@@ -81,9 +81,12 @@ class SnakeBoss {
         } else if (i === this.snake.length - 1 && noodleSprites.tail_standard) {
           // tail
           image(noodleSprites.tail_standard, sx, sy, CELL, CELL);
-        } else if (noodleSprites.body_blue) {
+        } else if (i <= this.snake.length/2 && noodleSprites.body_blue) {
           // body
           image(noodleSprites.body_blue, sx, sy, CELL, CELL);
+        } else if (noodleSprites.body_yellow) { //added
+          // body
+          image(noodleSprites.body_yellow, sx, sy, CELL, CELL);
         }
       } else {
         // Fallback: colored rects

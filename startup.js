@@ -11,6 +11,7 @@ let magicProjectiles = [];
 let roomCount = 0;
 let inBossRoom = false;
 let player = null;
+let rainbowSlimes = false;
 
 // Sounds
 let applesound, swingsound, fireballsound, healsound, footstepsound, bossmusic, dungeonmusic;
@@ -124,7 +125,7 @@ function setup() {
     noodleSprites.head_blue = imgNoodleSheet.get(0, 0, w, h);
     noodleSprites.body_blue = imgNoodleSheet.get(w, 0, w, h);
     noodleSprites.head_yellow = imgNoodleSheet.get(0, h, w, h);
-    noodleSprites.body_yellow = imgNoodleSheet.get(w, h, w, h);
+    noodleSprites.body_yellow = imgNoodleSheet.get(0, h * 2, w, h);
     noodleSprites.tail_standard = imgNoodleSheet.get(w, h * 2, w, h);
     noodleSprites.apple = imgNoodleSheet.get(w * 2, h * 2, w, h);
   }
@@ -281,6 +282,7 @@ function keyPressed() {
   if (key === "J") player.takeDamage?.(1);
   if (key === "K") player.heal?.(1);
   if (key === 'L') player.setMaxHP?.(player.maxHP + 1);
+  if (key === 'R') rainbowSlimes = !rainbowSlimes;
 
 
   if (key && key.toLowerCase() === "m") {

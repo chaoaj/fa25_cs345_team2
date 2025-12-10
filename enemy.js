@@ -26,11 +26,18 @@ class Enemy {
     this.acceleration = 0.1;
 
     // Visual properties
-    this.colorVariant = floor(random(0, 4)); // slime color
+    if (rainbowSlimes) {
+      this.colorVariant = 3; // use white base
+    } else {
+      this.colorVariant = floor(random(0, 4)); // slime color
+    }
     this.animFrame = 0;
     this.animTimer = 0;
     this.animSpeed = 0.5; // seconds per frame
     this.damageTimer = 0; // damage flash timer
+    this.red = random(0, 255);
+    this.green = random(0, 255);
+    this.blue = random(0, 255);
   }
 
   // Trigger flash when taking damage
@@ -64,6 +71,7 @@ class Enemy {
       if (this.velocityX < 0) scale(-1, 1);
 
       if (this.damageTimer > 0) tint(255, 0, 0);
+      else if (rainbowSlimes) tint(this.red, this.green, this.blue);
       else noTint();
 
       if (sprite) {
