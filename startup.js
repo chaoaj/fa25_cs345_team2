@@ -16,6 +16,7 @@ let applesound, swingsound, fireballsound, healsound, footstepsound;
 let spritesheet, imgWall, imgFloor;
 let imgPlayerSheet;
 let imgWeaponSheet;
+let imgSlimes;
 
 // --- ADDED: HUD Sprite Variables ---
 let imgHUDSheet;
@@ -32,6 +33,9 @@ function preload() {
 
   // Weapon spritesheet
   imgWeaponSheet = loadImage('libraries/Assets/Player/Key-Blade.png');
+
+  // Enemy spritesheet
+  imgSlimes = loadImage('libraries/Assets/Enemies/slimes.png');
   
   // --- ADDED: Load the HUD spritesheet ---
   imgHUDSheet = loadImage('libraries/Assets/Player/HPMPBar.png');

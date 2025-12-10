@@ -24,11 +24,39 @@ class Enemy {
     this.velocityX = 0;
     this.velocityY = 0;
     this.acceleration = 0.1; 
+
+    // --- ADDED: Sprite & Animation Properties ---
+    this.spriteWidth = 80; // The width of one sprite frame in slimes.png
+    this.spriteHeight = 64; // The height of one sprite frame
+    this.animFrame = random([0, 1]); // Current animation frame (0/2 or 1/3)
+    this.animTimer = 0;
+    this.animSpeed = 0.5; // Time (in seconds) per animation frame
+    // --- END ADDED ---
+    this.variant = random([0, 1]); // Different slime variants (0 or 1)
   }
 
   draw() {
-    fill(this.state === "chase" ? "orange" : "red");
-    ellipse(this.x, this.y, this.size);
+    if (!imgSlimes) {
+      fill(this.state === "chase" ? "orange" : "red");
+      ellipse(this.x, this.y, this.size);
+    } else {
+      // --- Determine Sprite based on Frame ---
+      let sy = (this.animFrame) * this.spriteHeight;
+      let sx = this.variant * this.spriteWidth;
+      image(imgSlimes, this.x, this.y, this.size + gridSize * 0.1, this.size,
+            sx, sy, this.spriteWidth, this.spriteHeight);
+      this.animTimer += deltaTime / 1000;
+      if (this.animTimer > this.animSpeed) {
+        this.animTimer = 0;
+        //modified to correct frames
+        if (this.animFrame%2 == 0){
+          this.animFrame = (this.animFrame === 0) ? 2 : 0;
+        } else {
+          this.animFrame = (this.animFrame === 1) ? 3 : 1;
+        }
+      }
+      this.animSpeed = (this.state === "chase") ? 0.25 : 0.5;
+    }
   }
 
   update() {
