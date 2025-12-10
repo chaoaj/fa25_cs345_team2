@@ -1,29 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dungeon Game</title>
+    <script src="p5.min.js"></script>
+    <script src="p5.sound.min.js"></script>
 
-    <title>Sketch</title>
+    <!-- Load enemy & boss logic BEFORE startup.js -->
+    <script src="Snake_Boss/snake.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="style.css">
-
-    <script src="libraries/p5.min.js"></script>
-    <script src="libraries/p5.sound.min.js"></script>
-  </head>
-
-  <body>
+    <!-- Load other logic -->
+    <script src="weapon.js"></script>
+    <script src="magic.js"></script>
     <script src="environment.js"></script>
     <script src="player.js"></script>
-    <script src="Snake_Boss/snake.js"></script>
-    <script src="ui/player_health_ui.js"></script>
-    <script src="heal_spell.js"></script>
-    <script src="weapon.js"></script>
-    <script src="enemy.js"></script>
-    <script src="magic.js"></script>
-    
-    <script src="startup.js"></script>
-   
 
-  </body>
+    <!-- Finally load the game loop -->
+    <script src="startup.js"></script>
+</head>
+<body></body>
 </html>

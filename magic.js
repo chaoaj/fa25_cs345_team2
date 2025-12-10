@@ -46,86 +46,64 @@ class MagicProjectile {
   }
 
   update() {
-    if (!this.active) return;
+  if (!this.active) return;
 
-    this.applyHoming();
+  // Move projectile
+  this.x += this.dx * this.speed;
+  this.y += this.dy * this.speed;
 
-    this.x += this.vx;
-    this.y += this.vy;
+  // Remove projectile if leaving room
+  if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+    this.active = false;
+    return;
+  }
 
-    // --- ADDED: Animation Update ---
-    this.animTimer += deltaTime / 1000;
-    if (this.animTimer > this.animSpeed) {
-        this.animTimer = 0;
-        this.animFrame = (this.animFrame + 1) % 4; // Cycle 0-3
+  // --- DAMAGE CHECK FOR ALL ENEMIES ---
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+
+    let hit = false;
+
+    // --- CASE 1: Boss or special enemies with their own hitbox logic ---
+    if (typeof e.checkProjectileHit === "function") {
+      hit = e.checkProjectileHit(this.x, this.y, this.radius);
     }
-    // ------------------------------
 
-    // Check for Wall Collisions
-    for (let i = 0; i < cells.cells.length; i++) {
-      for (let j = 0; j < cells.cells[i].length; j++) {
-        const cell = cells.cells[i][j];
-        if (cell.isWall() && cell.contains(this.x, this.y)) {
-          this.active = false;
-          return; 
-        }
+    // --- CASE 2: Normal enemies with simple circular hitbox ---
+    else if (typeof e.x === "number" && typeof e.y === "number") {
+      let dx = this.x - e.x;
+      let dy = this.y - e.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Estimate hit radius of 20px (adjust as needed)
+      if (dist < this.radius + 20) {
+        hit = true;
       }
     }
 
-    // --- MODIFIED: Robust Enemy Collision Check (Handles Segmented Bosses) ---
-    for (let i = enemies.length - 1; i >= 0; i--) {
-      const e = enemies[i];
-      let collisionDetected = false;
-      let targetSize = e.size; // Default size
+    // If a hit is detected:
+    if (hit) {
 
-      if (e.segments && e.segments.length > 0) {
-        // Handle segmented enemies (like SnakeBoss)
-        const gridSize = Math.min(windowWidth, windowHeight) / 20; 
-        const gridPixels = gridSize * 16;
-        const offsetX = (windowWidth - gridPixels) / 2;
-        const offsetY = (windowHeight - gridPixels) / 2;
-        targetSize = gridSize; // Snake segments are a grid square size
-
-        for (let seg of e.segments) {
-            const segX = offsetX + seg.x * gridSize + gridSize / 2;
-            const segY = offsetY + seg.y * gridSize + gridSize / 2;
-
-            if (dist(this.x, this.y, segX, segY) < this.size / 2 + targetSize / 2) {
-                collisionDetected = true;
-                break; // Found a hit, break segment loop
-            }
-        }
-      } else {
-        // Standard single-entity enemy collision
-        if (dist(this.x, this.y, e.x, e.y) < this.size / 2 + e.size / 2) {
-          collisionDetected = true;
-        }
+      // If enemy has its own applyDamage() method, use it
+      if (typeof e.applyDamage === "function") {
+        e.applyDamage(this.damage);
       }
 
-      if (collisionDetected) {
-        e.hp -= this.damage; 
-        e.takeDamage?.(0); // Trigger flash if method exists
-        
+      // Otherwise use direct HP subtraction
+      else if (typeof e.hp === "number") {
+        e.hp -= this.damage;
         if (e.hp <= 0) {
-          enemies.splice(i, 1); 
+          enemies.splice(i, 1);
         }
-        this.active = false;
-        return; // Exit the function after collision
       }
-    }
-    // --- END MODIFIED ---
-    
-    // Check for Out-of-Bounds
-    const gridSize = Math.min(windowWidth, windowHeight) / 20;
-    const gridPixels = gridSize * 16;
-    const offsetX = (windowWidth - gridPixels) / 2;
-    const offsetY = (windowHeight - gridPixels) / 2;
-    
-    if (this.x < offsetX || this.x > offsetX + gridPixels ||
-        this.y < offsetY || this.y > offsetY + gridPixels) {
+
+      // Remove projectile after hitting
       this.active = false;
+      return;
     }
   }
+}
+
 
   applyHoming() {
     let closestEnemy = null;

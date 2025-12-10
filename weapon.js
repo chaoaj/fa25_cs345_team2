@@ -2,13 +2,16 @@ class Weapon {
   constructor(type) {
     this.type = type;
     this.attackCooldown = 0;
-
-    this.attackDuration = 0.3;
+    
+    // Attack properties
+    this.attackDuration = 0.3; 
     this.active = false;
 
-    this.animFrame = 0;
+    // Animation properties
+    this.animFrame = 0; // Current frame (0, 1, 2, or 3)
     this.animTimer = 0;
-    this.animSpeed = this.attackDuration / 4;
+    // Each frame lasts 1/4 of the total attack duration
+    this.animSpeed = this.attackDuration / 4; 
   }
 
   getType() { return this.type; }
@@ -20,12 +23,16 @@ class Weapon {
       if (this.attackCooldown < 0) this.attackCooldown = 0;
     }
 
+    // Animation logic
     if (this.active) {
       this.animTimer += deltaTime / 1000;
       if (this.animTimer > this.animSpeed) {
         this.animTimer = 0;
         this.animFrame++;
-        if (this.animFrame > 3) this.animFrame = 3;
+        // Keep the animation on the last frame if it finishes
+        if (this.animFrame > 3) {
+          this.animFrame = 3;
+        }
       }
     }
   }
@@ -36,12 +43,16 @@ class Weapon {
     this.active = true;
     this.attackCooldown = 0.45;
 
+    // Reset animation on new attack
     this.animFrame = 0;
     this.animTimer = 0;
 
+    // Hitbox radius — match visual length (drawAttack uses r * 1.5)
     const r = (windowHeight / 10) * 1.5;
-    const halfArc = PI / 4;
 
+    const halfArc = PI / 4; // 90° total swing width
+
+    // Center angle for each direction
     const dirAngles = {
       right: 0,
       downright: PI / 4,
@@ -57,74 +68,60 @@ class Weapon {
     const startAngle = centerAngle - halfArc;
     const endAngle = centerAngle + halfArc;
 
-    // Grid constants needed for checking segmented enemies like SnakeBoss
-    const gridSize = Math.min(windowWidth, windowHeight) / 20;
-    const gridPixels = gridSize * 16;
-    const offsetX = (windowWidth - gridPixels) / 2;
-    const offsetY = (windowHeight - gridPixels) / 2;
-
-    const s = this.normalizeAngle(startAngle);
-    const eA = this.normalizeAngle(endAngle);
-
+    // -------- ENEMY HIT DETECTION --------
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
-      let targets = [];
-      let isSegmented = e.segments && e.segments.length > 0;
-      
-      // --- MODIFIED LOGIC: Get all hit targets (segments or center) ---
-      if (isSegmented) {
-        // If it's the Snake Boss, check all segments
-        for (let seg of e.segments) {
-          // Convert grid coords to screen coords
-          const segX = offsetX + seg.x * gridSize + gridSize / 2;
-          const segY = offsetY + seg.y * gridSize + gridSize / 2;
-          // Segments are treated as a circle with half a grid square radius
-          targets.push({ x: segX, y: segY, radius: gridSize / 2 });
+
+      // Special-case: SnakeBoss (or any enemy that defines checkSwordHit/applyDamage)
+      if (typeof e.checkSwordHit === "function") {
+        if (e.checkSwordHit(x, y, r, startAngle, endAngle)) {
+          if (typeof e.applyDamage === "function") {
+            e.applyDamage(5);
+          } else if (typeof e.hp === "number") {
+            e.hp -= 5;
+            if (e.hp <= 0) enemies.splice(i, 1);
+          }
         }
       } else {
-        // Normal enemy (use its center x/y)
-        targets.push({ x: e.x, y: e.y, radius: e.size / 2 });
-      }
+        // Normal enemy hit detection
+        const dx = e.x - x;
+        const dy = e.y - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-      let hit = false;
-      for (const target of targets) {
-        const dx = target.x - x;
-        const dy = target.y - y;
-        const distToTarget = Math.sqrt(dx * dx + dy * dy);
-
-        // Check if the target is within the sword's range (r + target's radius)
-        if (distToTarget < r + target.radius) {
+        if (dist < r) {
           const angle = this.normalizeAngle(atan2(dy, dx));
+          const start = this.normalizeAngle(startAngle);
+          const end = this.normalizeAngle(endAngle);
 
-          // Check if the target is within the sword's arc
-          const inArc = (s < eA)
-            ? angle >= s && angle <= eA
-            : angle >= s || angle <= eA;
+          const inArc = this.angleInArc(angle, start, end);
 
           if (inArc) {
-            hit = true;
-            break; // Segment/Enemy hit, break the target loop
+            if (typeof e.applyDamage === "function") {
+              e.applyDamage(5);
+            } else if (typeof e.hp === "number") {
+              e.hp -= 5;
+              if (e.hp <= 0) {
+                enemies.splice(i, 1);
+              }
+            }
           }
         }
       }
-
-      if (hit) {
-        e.hp -= 5;
-        e.takeDamage?.(0); // Trigger damage flash
-        if (e.hp <= 0) enemies.splice(i, 1);
-      }
     }
-    // --- END MODIFIED LOGIC ---
+    // ------------------------------------
 
-    setTimeout(() => this.active = false, this.attackDuration * 1000);
+    setTimeout(() => (this.active = false), this.attackDuration * 1000);
   }
 
   drawAttack(x, y, direction) {
     if (!this.active || !imgWeaponSheet) return;
 
     push();
+    
+    // 1. Move to the player's position (the Pivot Point)
     translate(x, y);
 
+    // 2. Rotate to face the direction
     const dirAngles = {
       up: 0,
       upright: PI / 4,
@@ -135,25 +132,40 @@ class Weapon {
       left: (3 * PI) / 2,
       upleft: (7 * PI) / 4
     };
+    const centerAngle = dirAngles[direction] ?? 0;
+    rotate(centerAngle);
 
-    rotate(dirAngles[direction] ?? 0);
+    // 3. Setup drawing
+    imageMode(CORNER); 
 
-    imageMode(CORNER);
-
+    // Get sprite dimensions
     const sw = imgWeaponSheet.width / 2;
     const sh = imgWeaponSheet.height / 2;
+    
+    // Frame picking logic
+    let sx, sy;
+    if (this.animFrame === 0) { // Top-left
+      sx = 0; sy = 0;
+    } else if (this.animFrame === 1) { // Top-right
+      sx = sw; sy = 0;
+    } else if (this.animFrame === 2) { // Bottom-left
+      sx = 0; sy = sh;
+    } else { // Bottom-right
+      sx = sw; sy = sh;
+    }
 
-    let sx = (this.animFrame % 2) * sw;
-    let sy = (this.animFrame < 2) ? 0 : sh;
-
+    // Calculate destination size
     const r = windowHeight / 10;
     const destW = r * 1.5;
     const destH = (destW / sw) * sh;
 
-    const handleOffsetX = destW * 0.45 + 15;
-    const handleOffsetY = destH * 0.45 - 30;
+    // Anchor tuning
+    const handleOffsetX = destW * 0.45 + 15; 
+    const handleOffsetY = destH * 0.45 - 30; 
 
-    image(imgWeaponSheet,
+    // 4. Draw the image with offsets
+    image(
+      imgWeaponSheet,
       -handleOffsetX,
       -destH + handleOffsetY,
       destW,
@@ -171,5 +183,10 @@ class Weapon {
     a = a % (2 * PI);
     if (a < 0) a += 2 * PI;
     return a;
+  }
+
+  angleInArc(angle, start, end) {
+    if (start < end) return angle >= start && angle <= end;
+    return angle >= start || angle <= end;
   }
 }
