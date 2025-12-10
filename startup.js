@@ -10,8 +10,12 @@ let inBossRoom = false;
 let player = null;
 
 // --- Sound variables ---
+<<<<<<< HEAD
+let applesound, swingsound, fireballsound, healsound, footstepsound, bossmusic;
+=======
 let applesound, swingsound, fireballsound, healsound, footstepsound;
 let snakeGame; 
+>>>>>>> f3d2db61c18d7a1923ac43db81d2ee0bba6a9a35
 
 // --- Sprite variables ---
 let spritesheet, imgWall, imgFloor;
@@ -47,6 +51,7 @@ function preload() {
   // --- ADDED: Load the HUD spritesheet ---
   imgHUDSheet = loadImage('libraries/Assets/Player/HPMPBar.png');
 
+<<<<<<< HEAD
   applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
   swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
   swingsound.setVolume(0.2);
@@ -82,12 +87,14 @@ function stopDungeonMusic() {
   if (dungeonmusic && dungeonmusic.isPlaying()) {
     dungeonmusic.stop();
   }
+=======
   // Enemies
   imgSlimeSheet = loadImage('libraries/Assets/Enemies/slimes.png');
   imgNoodleSheet = loadImage('libraries/Assets/Enemies/Noodle.png');
 
   // Magic
   imgFireballSheet = loadImage('libraries/Assets/Player/firewall.png');
+>>>>>>> f3d2db61c18d7a1923ac43db81d2ee0bba6a9a35
 }
 
 function setup() {
@@ -111,6 +118,16 @@ function setup() {
     imgHPBarBack = imgHUDSheet.get(0, barH * 4, barW, barH);
     imgMPBarBack = imgHUDSheet.get(0, barH * 5, barW, barH);
   }
+<<<<<<< HEAD
+    
+=======
+    // --- Load Sounds ---
+  applesound = loadSound('libraries/Assets/Sounds/20279__koops__apple_crunch_16.wav');
+  swingsound = loadSound('libraries/Assets/Sounds/sword-swing-whoosh-2-SBA-300463384.mp3');
+  fireballsound = loadSound('libraries/Assets/Sounds/magical-fireball-whoosh-SBA-300156509.mp3');
+  healsound = loadSound('libraries/Assets/Sounds/ascend-flutter-SBA-300148979.mp3');
+  footstepsound = loadSound('libraries/Assets/Sounds/fast-footsteps.mp3');
+    footstepsound.setVolume(0.2);
 
   // Slime Slicing
   if (imgSlimeSheet) {
@@ -149,6 +166,7 @@ function setup() {
     redFireFrames.push(imgFireballSheet.get(2 * fw, 2 * fh, fw, fh)); // (2,2)
   }
   // --- END MODIFIED ---
+>>>>>>> f3d2db61c18d7a1923ac43db81d2ee0bba6a9a35
 }
 
 function draw() {
