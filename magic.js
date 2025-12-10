@@ -1,41 +1,36 @@
-// This file defines the MagicProjectile class
+// magic.js — MagicProjectile (with homing + boss hit support)
 
 class MagicProjectile {
   constructor(x, y, direction) {
     this.x = x;
     this.y = y;
-    this.size = 24; // Increased size for the sprite
+    this.size = 12;
     this.speed = 7;
-    this.damage = 3; 
-    this.active = true; 
+    this.damage = 3;
+    this.active = true;
 
-    this.homingRange = 150; 
-    this.turnStrength = 0.5; 
+    // Homing settings
+    this.homingRange = 300;
+    this.turnStrength = 0.3;
 
     this.vx = 0;
     this.vy = 0;
 
-    // --- ADDED: Animation Properties ---
-    this.animTimer = 0;
-    this.animFrame = 0;
-    this.animSpeed = 0.1; // 100ms per frame
-    // -----------------------------------
-
-    // --- Calculate Velocity from Direction ---
+    // Direction → velocity
     let dx = 0;
     let dy = 0;
 
-    if (direction.includes('left')) dx = -1;
-    if (direction.includes('right')) dx = 1;
-    if (direction.includes('up')) dy = -1;
-    if (direction.includes('down')) dy = 1;
+    if (direction.includes("left")) dx = -1;
+    if (direction.includes("right")) dx = 1;
+    if (direction.includes("up")) dy = -1;
+    if (direction.includes("down")) dy = 1;
 
-    if (direction === 'up') { dx = 0; dy = -1; }
-    if (direction === 'down') { dx = 0; dy = 1; }
-    if (direction === 'left') { dx = -1; dy = 0; }
-    if (direction === 'right') { dx = 1; dy = 0; }
+    if (direction === "up") { dx = 0; dy = -1; }
+    if (direction === "down") { dx = 0; dy = 1; }
+    if (direction === "left") { dx = -1; dy = 0; }
+    if (direction === "right") { dx = 1; dy = 0; }
 
-    let len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.sqrt(dx * dx + dy * dy);
     if (len > 0) {
       dx /= len;
       dy /= len;
@@ -46,91 +41,101 @@ class MagicProjectile {
   }
 
   update() {
-  if (!this.active) return;
+    if (!this.active) return;
 
-  // Move projectile
-  this.x += this.dx * this.speed;
-  this.y += this.dy * this.speed;
+    this.applyHoming();
 
-  // Remove projectile if leaving room
-  if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
-    this.active = false;
-    return;
-  }
+    this.x += this.vx;
+    this.y += this.vy;
 
-  // --- DAMAGE CHECK FOR ALL ENEMIES ---
-  for (let i = enemies.length - 1; i >= 0; i--) {
-    const e = enemies[i];
-
-    let hit = false;
-
-    // --- CASE 1: Boss or special enemies with their own hitbox logic ---
-    if (typeof e.checkProjectileHit === "function") {
-      hit = e.checkProjectileHit(this.x, this.y, this.radius);
-    }
-
-    // --- CASE 2: Normal enemies with simple circular hitbox ---
-    else if (typeof e.x === "number" && typeof e.y === "number") {
-      let dx = this.x - e.x;
-      let dy = this.y - e.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Estimate hit radius of 20px (adjust as needed)
-      if (dist < this.radius + 20) {
-        hit = true;
-      }
-    }
-
-    // If a hit is detected:
-    if (hit) {
-
-      // If enemy has its own applyDamage() method, use it
-      if (typeof e.applyDamage === "function") {
-        e.applyDamage(this.damage);
-      }
-
-      // Otherwise use direct HP subtraction
-      else if (typeof e.hp === "number") {
-        e.hp -= this.damage;
-        if (e.hp <= 0) {
-          enemies.splice(i, 1);
+    // Wall collisions
+    for (let i = 0; i < cells.cells.length; i++) {
+      for (let j = 0; j < cells.cells[i].length; j++) {
+        const cell = cells.cells[i][j];
+        if (cell.isWall() && cell.contains(this.x, this.y)) {
+          this.active = false;
+          return;
         }
       }
+    }
 
-      // Remove projectile after hitting
+    // Enemy / Boss collisions
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const e = enemies[i];
+
+      // Special case: SnakeBoss supports checkProjectileHit()
+      if (e instanceof SnakeBoss && typeof e.checkProjectileHit === "function") {
+        if (e.checkProjectileHit(this.x, this.y, this.size / 2)) {
+          e.applyDamage(this.damage);
+          this.active = false;
+          return;
+        }
+        continue; // don't run normal enemy logic on SnakeBoss
+      }
+
+      // Normal enemies: circle collision
+      const d = dist(this.x, this.y, e.x, e.y);
+      if (d < this.size / 2 + (e.size || 20) / 2) {
+        e.hp -= this.damage;
+        if (e.hp <= 0) enemies.splice(i, 1);
+        this.active = false;
+        return;
+      }
+    }
+
+    // Out of bounds kill
+    const gridSize = Math.min(windowWidth, windowHeight) / 20;
+    const gridPixels = gridSize * 16;
+    const offsetX = (windowWidth - gridPixels) / 2;
+    const offsetY = (windowHeight - gridPixels) / 2;
+
+    if (
+      this.x < offsetX ||
+      this.x > offsetX + gridPixels ||
+      this.y < offsetY ||
+      this.y > offsetY + gridPixels
+    ) {
       this.active = false;
-      return;
     }
   }
-}
-
 
   applyHoming() {
     let closestEnemy = null;
     let closestDist = Infinity;
 
     for (let e of enemies) {
-      let d = dist(this.x, this.y, e.x, e.y);
+      let ex = e.x;
+      let ey = e.y;
+
+      // If boss is grid-based, approximate its head position:
+      if (e instanceof SnakeBoss && e.snake && e.snake.length > 0) {
+        const head = e.snake[0];
+        ex = head.x * CELL + e.offsetX + CELL / 2;
+        ey = head.y * CELL + e.offsetY + CELL / 2;
+      }
+
+      const d = dist(this.x, this.y, ex, ey);
       if (d < closestDist && d < this.homingRange) {
         closestDist = d;
-        closestEnemy = e;
+        closestEnemy = { ex, ey, ref: e };
       }
     }
 
-    if (closestEnemy) {
-      let dx = closestEnemy.x - this.x;
-      let dy = closestEnemy.y - this.y;
+    if (!closestEnemy) return;
 
-      let len = Math.sqrt(dx * dx + dy * dy);
-      if (len > 0) {
-        dx /= len;
-        dy /= len;
-      }
+    let dx = closestEnemy.ex - this.x;
+    let dy = closestEnemy.ey - this.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0) {
+      dx /= len;
+      dy /= len;
+    }
 
-      this.vx += dx * this.turnStrength;
-      this.vy += dy * this.turnStrength;
+    this.vx += dx * this.turnStrength;
+    this.vy += dy * this.turnStrength;
 
-      let newSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    const newSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (newSpeed > 0) {
       this.vx = (this.vx / newSpeed) * this.speed;
       this.vy = (this.vy / newSpeed) * this.speed;
     }
@@ -138,30 +143,18 @@ class MagicProjectile {
 
   draw() {
     if (!this.active) return;
-    
-    // --- MODIFIED: Draw Fireball Sprite ---
-    if (redFireFrames && redFireFrames.length > 0) {
-        push();
-        translate(this.x, this.y);
-        
-        // Rotate the fireball to face direction of movement
-        // We add PI/2 because usually these flames point "Up" by default
-        let angle = atan2(this.vy, this.vx) + PI/2; 
-        rotate(angle);
-        
-        imageMode(CENTER);
-        // Use mod to ensure safety if frames aren't loaded yet
-        let frame = redFireFrames[this.animFrame % redFireFrames.length];
-        if (frame) {
-            image(frame, 0, 0, this.size, this.size);
-        }
-        pop();
+
+    // If you want to use fireball frames:
+    if (Array.isArray(redFireFrames) && redFireFrames.length > 0) {
+      imageMode(CENTER);
+      const frameIndex = floor((millis() / 80) % redFireFrames.length);
+      const frame = redFireFrames[frameIndex];
+      image(frame, this.x, this.y, this.size * 2, this.size * 2);
     } else {
-        // Fallback
-        fill(255, 100, 0); 
-        noStroke();
-        ellipse(this.x, this.y, this.size, this.size);
+      // fallback: cyan circle
+      noStroke();
+      fill(100, 200, 255);
+      ellipse(this.x, this.y, this.size, this.size);
     }
-    // --------------------------------------
   }
 }

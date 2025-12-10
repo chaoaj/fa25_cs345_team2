@@ -5,25 +5,21 @@ const ROWS = 20;
 const CELL = 26;
 const STEP_DELAY = 6;
 
-const SNAKE_HEAD_COLOR = [0, 200, 255];
-const SNAKE_BODY_COLOR = [0, 150, 200];
-const APPLE_COLOR = [255, 80, 80];
-
 class SnakeBoss {
   constructor(x, y) {
     this.spawnX = x;
     this.spawnY = y;
 
-    // Drawing offset (center the grid at world coords)
+    // Drawing offset so grid is centered around (x, y)
     this.offsetX = x - (COLS * CELL) / 2;
     this.offsetY = y - (ROWS * CELL) / 2;
 
-    // Boss Stats
+    // Boss stats
     this.maxHP = 50;
     this.hp = this.maxHP;
     this.damage = 1;
-    this.touchRange = 30;
-    this.attackCooldown = 800;
+    this.touchRange = 30;      // distance to hurt player
+    this.attackCooldown = 800; // ms
     this._lastAttack = 0;
 
     this.resetState();
@@ -31,9 +27,9 @@ class SnakeBoss {
 
   resetState() {
     this.snake = [
-      { x: floor(COLS / 2), y: floor(ROWS / 2) },
+      { x: floor(COLS / 2),     y: floor(ROWS / 2) },
       { x: floor(COLS / 2) - 1, y: floor(ROWS / 2) },
-      { x: floor(COLS / 2) - 2, y: floor(ROWS / 2) }
+      { x: floor(COLS / 2) - 2, y: floor(ROWS / 2) },
     ];
 
     this.pendingGrow = 0;
@@ -45,9 +41,7 @@ class SnakeBoss {
     this.placeApple();
   }
 
-  // --------------------
-  // DRAWING
-  // --------------------
+  // ---------------- DRAWING ----------------
   draw() {
     this.drawHPBar();
 
@@ -55,18 +49,47 @@ class SnakeBoss {
     translate(this.offsetX, this.offsetY);
 
     // Draw apple
-    fill(...APPLE_COLOR);
-    rect(this.apple.x * CELL, this.apple.y * CELL, CELL, CELL);
+    if (this.apple) {
+      if (typeof noodleSprites !== "undefined" && noodleSprites.apple) {
+        imageMode(CORNER);
+        image(
+          noodleSprites.apple,
+          this.apple.x * CELL,
+          this.apple.y * CELL,
+          CELL,
+          CELL
+        );
+      } else {
+        fill(255, 80, 80);
+        rect(this.apple.x * CELL, this.apple.y * CELL, CELL, CELL, 6);
+      }
+    }
 
-    // Draw snake body
+    // Draw snake
     for (let i = 0; i < this.snake.length; i++) {
-      fill(i === 0 ? SNAKE_HEAD_COLOR : SNAKE_BODY_COLOR);
-      rect(
-        this.snake[i].x * CELL,
-        this.snake[i].y * CELL,
-        CELL,
-        CELL
-      );
+      const seg = this.snake[i];
+      const sx = seg.x * CELL;
+      const sy = seg.y * CELL;
+
+      // If you want to use noodleSprites:
+      if (typeof noodleSprites !== "undefined" && noodleSprites.head_blue) {
+        imageMode(CORNER);
+
+        if (i === 0) {
+          // head
+          image(noodleSprites.head_blue, sx, sy, CELL, CELL);
+        } else if (i === this.snake.length - 1 && noodleSprites.tail_standard) {
+          // tail
+          image(noodleSprites.tail_standard, sx, sy, CELL, CELL);
+        } else if (noodleSprites.body_blue) {
+          // body
+          image(noodleSprites.body_blue, sx, sy, CELL, CELL);
+        }
+      } else {
+        // Fallback: colored rects
+        fill(i === 0 ? color(0, 200, 255) : color(0, 150, 200));
+        rect(sx, sy, CELL, CELL, 4);
+      }
     }
 
     pop();
@@ -94,29 +117,25 @@ class SnakeBoss {
     pop();
   }
 
-  // --------------------
-  // UPDATE
-  // --------------------
+  // ---------------- UPDATE ----------------
   update() {
     if (this.hp <= 0) return;
     if (this.gameOver) return;
 
-    // Move periodically
+    // Step movement
     if (millis() - this.lastStepFrame >= STEP_DELAY * 10) {
       this.aiStep();
       this.lastStepFrame = millis();
     }
 
-    // Auto-move apple
+    // Apple timer
     this.appleTimer.tick(() => this.placeApple(), true);
 
-    // Player collision (bite)
+    // Damage player if close
     this.checkPlayerCollision();
   }
 
-  // --------------------
-  // PLAYER COLLISION DAMAGE
-  // --------------------
+  // ---------------- PLAYER CONTACT DAMAGE ----------------
   checkPlayerCollision() {
     if (!player) return;
 
@@ -126,9 +145,9 @@ class SnakeBoss {
 
     const dx = player.x - hx;
     const dy = player.y - hy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const d = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < this.touchRange) this.tryDamagePlayer();
+    if (d < this.touchRange) this.tryDamagePlayer();
   }
 
   tryDamagePlayer() {
@@ -136,12 +155,12 @@ class SnakeBoss {
     if (now - this._lastAttack < this.attackCooldown) return;
     this._lastAttack = now;
 
-    if (player.takeDamage) player.takeDamage(this.damage);
+    if (typeof player.takeDamage === "function") {
+      player.takeDamage(this.damage);
+    }
   }
 
-  // --------------------
-  // AI MOVEMENT
-  // --------------------
+  // ---------------- AI MOVEMENT ----------------
   aiStep() {
     if (this.snake.length === COLS * ROWS) return;
 
@@ -152,13 +171,13 @@ class SnakeBoss {
     let chosenPath = null;
 
     if (pathToApple && pathToApple.length > 1) {
-      const sim = this.simulateFollowPath(this.snake, pathToApple);
+      const { virtualSnake, ateApple } =
+        this.simulateFollowPath(this.snake, pathToApple);
 
-      if (sim.ateApple) {
-        const vHead = sim.virtualSnake[0];
-        const vTail = sim.virtualSnake.at(-1);
-        const safe = this.bfsPath(vHead, vTail, sim.virtualSnake, true);
-
+      if (ateApple) {
+        const vHead = virtualSnake[0];
+        const vTail = virtualSnake[virtualSnake.length - 1];
+        const safe = this.bfsPath(vHead, vTail, virtualSnake, true);
         if (safe && safe.length > 1) chosenPath = pathToApple;
       } else {
         chosenPath = pathToApple;
@@ -172,8 +191,12 @@ class SnakeBoss {
 
     if (!chosenPath) {
       const safe = this.safeNeighborStep(head, this.snake);
-      if (!safe) return (this.gameOver = true);
-      return this.moveSnakeTo(safe);
+      if (!safe) {
+        this.gameOver = true;
+        return;
+      }
+      this.moveSnakeTo(safe);
+      return;
     }
 
     this.moveSnakeTo(chosenPath[1]);
@@ -185,7 +208,8 @@ class SnakeBoss {
       pos.y < 0 || pos.y >= ROWS ||
       this.collidesWithBody(pos, this.snake.slice(0, -1))
     ) {
-      return (this.gameOver = true);
+      this.gameOver = true;
+      return;
     }
 
     this.snake.unshift({ x: pos.x, y: pos.y });
@@ -199,31 +223,42 @@ class SnakeBoss {
     else this.snake.pop();
   }
 
-  // --------------------
-  // SWORD DAMAGE CHECK
-  // --------------------
+  safeNeighborStep(head, body) {
+    const n = this.neighbors(head);
+    for (let nb of n) {
+      if (
+        nb.x >= 0 && nb.x < COLS &&
+        nb.y >= 0 && nb.y < ROWS &&
+        !this.collidesWithBody(nb, body.slice(0, -1))
+      ) {
+        return nb;
+      }
+    }
+    return null;
+  }
+
+  // ---------------- SWORD HIT CHECK ----------------
   checkSwordHit(px, py, radius, startAngle, endAngle) {
     if (this.hp <= 0) return false;
 
     for (let seg of this.snake) {
-      let sx = seg.x * CELL + this.offsetX + CELL / 2;
-      let sy = seg.y * CELL + this.offsetY + CELL / 2;
+      const sx = seg.x * CELL + this.offsetX + CELL / 2;
+      const sy = seg.y * CELL + this.offsetY + CELL / 2;
 
-      let dx = sx - px;
-      let dy = sy - py;
-      let dist = Math.sqrt(dx * dx + dy * dy);
+      const dx = sx - px;
+      const dy = sy - py;
+      const d = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < radius + CELL / 2) {
+      if (d < radius + CELL / 2) {
         let angle = atan2(dy, dx);
         angle = (angle + TWO_PI) % TWO_PI;
 
-        startAngle = (startAngle + TWO_PI) % TWO_PI;
-        endAngle = (endAngle + TWO_PI) % TWO_PI;
+        let s = (startAngle + TWO_PI) % TWO_PI;
+        let e = (endAngle + TWO_PI) % TWO_PI;
 
-        const inArc =
-          (startAngle < endAngle)
-            ? angle >= startAngle && angle <= endAngle
-            : angle >= startAngle || angle <= endAngle;
+        const inArc = (s < e)
+          ? (angle >= s && angle <= e)
+          : (angle >= s || angle <= e);
 
         if (inArc) return true;
       }
@@ -231,29 +266,48 @@ class SnakeBoss {
     return false;
   }
 
-  // --------------------
-  // APPLY DAMAGE
-  // --------------------
+  // ---------------- MAGIC PROJECTILE HIT CHECK ----------------
+  checkProjectileHit(px, py, radius) {
+    if (this.hp <= 0) return false;
+
+    for (let seg of this.snake) {
+      const sx = seg.x * CELL + this.offsetX + CELL / 2;
+      const sy = seg.y * CELL + this.offsetY + CELL / 2;
+
+      const d = dist(px, py, sx, sy);
+      if (d < radius + CELL / 2) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ---------------- APPLY DAMAGE / DEATH ----------------
   applyDamage(amount) {
     this.hp -= amount;
+    console.log("SnakeBoss HP:", this.hp);
+
     if (this.hp <= 0) {
       this.hp = 0;
-
       console.log("Snake Boss Defeated!");
 
-      // Remove boss
+      // stop boss music, resume dungeon music if function exists
+      if (bossmusic && bossmusic.isPlaying()) bossmusic.stop();
+      if (typeof playDungeonMusic === "function") playDungeonMusic();
+
+      // remove boss from enemies
       enemies = enemies.filter(e => !(e instanceof SnakeBoss));
 
-      // Reset room cycle
+      // reset room cycle
       roomCount = 0;
 
-      // Generate exit tile in top-center
+      // spawn an exit so player can leave
       this.spawnBossExit();
     }
   }
 
-  // Create an exit tile when boss dies
   spawnBossExit() {
+    // put exit at top center of room grid
     const exitX = floor(COLS / 2);
     const exitY = 0;
 
@@ -264,27 +318,29 @@ class SnakeBoss {
     }
   }
 
-  // --------------------
-  // BFS & SIMULATION
-  // --------------------
+  // ---------------- BFS & SIMULATION ----------------
   bfsPath(start, goal, body, allowTail) {
     const blocked = new Set();
+
     for (let i = 0; i < body.length; i++) {
       const seg = body[i];
+      // don't block the starting cell
       if (!(seg.x === start.x && seg.y === start.y)) {
+        // optionally allow the tail to move into
         if (!(allowTail && i === body.length - 1)) {
           blocked.add(`${seg.x},${seg.y}`);
         }
       }
     }
 
-    const q = [start];
+    const queue = [start];
     const visited = new Set([`${start.x},${start.y}`]);
     const parent = {};
     let found = false;
 
-    while (q.length) {
-      const cur = q.shift();
+    while (queue.length > 0) {
+      const cur = queue.shift();
+
       if (cur.x === goal.x && cur.y === goal.y) {
         found = true;
         break;
@@ -300,7 +356,7 @@ class SnakeBoss {
         ) {
           visited.add(key);
           parent[key] = cur;
-          q.push(nb);
+          queue.push(nb);
         }
       }
     }
@@ -342,9 +398,7 @@ class SnakeBoss {
     return { virtualSnake: vsnake, ateApple: ate };
   }
 
-  // --------------------
-  // UTILITIES
-  // --------------------
+  // ---------------- UTILITIES ----------------
   placeApple() {
     const occupied = new Set(this.snake.map(s => `${s.x},${s.y}`));
     const free = [];
@@ -356,7 +410,10 @@ class SnakeBoss {
       }
     }
 
-    if (free.length === 0) return (this.gameOver = true);
+    if (free.length === 0) {
+      this.gameOver = true;
+      return;
+    }
 
     this.apple = random(free);
     this.appleTimer.reset();
@@ -370,10 +427,11 @@ class SnakeBoss {
     return [
       { x: c.x + 1, y: c.y },
       { x: c.x - 1, y: c.y },
-      { x: c.x, y: c.y + 1 },
-      { x: c.x, y: c.y - 1 }
+      { x: c.x,     y: c.y + 1 },
+      { x: c.x,     y: c.y - 1 },
     ];
   }
 }
 
+// Make it globally visible for startup.js
 window.SnakeBoss = SnakeBoss;
