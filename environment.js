@@ -330,4 +330,45 @@ class Cell {
   // --- END MODIFIED ---
 }
 
+function createSnakeBossRoom() {
+  console.log("Snake Boss Room Loading...");
 
+  // Make sure grid exists
+  cells.create();
+
+  // Remove all interior walls
+  cells.clearInterior();
+
+  // Remove exits so player cannot leave
+  cells.exitSide = null;
+
+  // Create a big box around the interior
+  for (let x = 0; x < 16; x++) {
+    cells.cells[x][0].setType("wall");
+    cells.cells[x][15].setType("wall");
+  }
+  for (let y = 0; y < 16; y++) {
+    cells.cells[0][y].setType("wall");
+    cells.cells[15][y].setType("wall");
+  }
+
+  // Optional decoration (center arena)
+  for (let x = 5; x <= 10; x++) {
+    cells.cells[x][8].setType("wall");
+  }
+
+  // Clear existing enemies
+  enemies = [];
+
+  // ---- SPAWN SNAKE BOSS ----
+  if (typeof SnakeBoss !== "undefined") {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    enemies.push(new SnakeBoss(centerX, centerY));
+    console.log("Snake Boss Spawned.");
+  } else {
+    console.error("SnakeBoss class is not loaded!");
+  }
+
+  levelNumber++;
+}

@@ -231,54 +231,26 @@ class SnakeBoss {
     return false;
   }
 
-  checkProjectileHit(px, py, radius = 20) {
-    if (this.hp <= 0) return false;
-
-    for (let seg of this.snake) {
-        let sx = seg.x * CELL + this.offsetX + CELL / 2;
-        let sy = seg.y * CELL + this.offsetY + CELL / 2;
-
-        let dx = sx - px;
-        let dy = sy - py;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-
-        // Projectile is a simple circular hitbox
-        if (dist < radius + CELL / 2) {
-            return true;
-        }
-    }
-
-    return false;
-  }
-
-
   // --------------------
   // APPLY DAMAGE
   // --------------------
   applyDamage(amount) {
-  this.hp -= amount;
+    this.hp -= amount;
+    if (this.hp <= 0) {
+      this.hp = 0;
 
-  if (this.hp <= 0) {
-    this.hp = 0;
-    console.log("Snake Boss Defeated!");
+      console.log("Snake Boss Defeated!");
 
-    // ⭐ STOP THE MUSIC
-    if (bossmusic && bossmusic.isPlaying()) {
-      console.log("Stopping boss music...");
-      bossmusic.stop();
+      // Remove boss
+      enemies = enemies.filter(e => !(e instanceof SnakeBoss));
+
+      // Reset room cycle
+      roomCount = 0;
+
+      // Generate exit tile in top-center
+      this.spawnBossExit();
     }
-
-    // Remove boss object
-    enemies = enemies.filter(e => !(e instanceof SnakeBoss));
-
-    // Reset room progression
-    roomCount = 0;
-
-    // Generate exit
-    this.spawnBossExit();
   }
-}
-
 
   // Create an exit tile when boss dies
   spawnBossExit() {
