@@ -267,6 +267,11 @@ if (dx !== 0 || dy !== 0) {
   }
 
   finishRoomTransition() {
+    //Ensure audio is unlocked before starting boss music
+    if (getAudioContext().state !== "running") {
+        getAudioContext().resume();
+    }
+
     roomCount++;
 
     // Check if this is a boss room
@@ -274,11 +279,20 @@ if (dx !== 0 || dy !== 0) {
 
     // Create normal room or boss room
     if (isBossRoom) {
-        createSnakeBossRoom();
-    } else {
-        cells.create();
-        cells.change();
-    }
+
+    console.log("Loading BOSS ROOM...");
+    stopDungeonMusic();        //Stop dungeon music
+    createSnakeBossRoom();     //Boss music starts inside this function
+
+} else {
+
+    console.log("Loading NORMAL ROOM...");
+    cells.create();
+    cells.change();
+    playDungeonMusic();        //Start dungeon music
+
+}
+
 
     const gridSize = Math.min(windowWidth, windowHeight) / 20;
     const gridPixels = gridSize * 16;
