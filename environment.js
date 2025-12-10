@@ -217,28 +217,7 @@ class Cells {
       return;
     }
 
-    // --- BOSS SPAWN LOGIC ---
-    // Check if the NEXT level (levelNumber + 1 effectively, since loadLayout increments it) 
-    // is a multiple of 10.
     
-    // Note: levelNumber is incremented inside loadLayout, so we check current levelNumber + 1
-    // OR we just assume if levelNumber (after increment) % 10 == 0.
-    
-    // Let's check logic:
-    // loadLayout() does: levelNumber++. 
-    // So if current is 9, loadLayout makes it 10.
-    // We want the 10th room to be a boss.
-    
-    // We need to pick the layout first.
-    let isBossLevel = (levelNumber + 1) > 0 && (levelNumber + 1) % 10 === 0;
-
-    if (isBossLevel) {
-       this.loadLayout("bossRoom"); // Load an empty room
-       enemies = [];
-       enemies.push(new SnakeBoss(levelNumber)); // Add the Boss to the enemy list
-       return; 
-    }
-    // ------------------------
 
     const layouts = ["cross", "apartments", "deuce", "deuceInv"];
     const valueToRemove = this.layout;
