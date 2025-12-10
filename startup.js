@@ -17,7 +17,6 @@ let snakeGame;
 let spritesheet, imgWall, imgFloor;
 let imgPlayerSheet;
 let imgWeaponSheet;
-let imgSlimes;
 
 // --- HUD Sprite Variables ---
 let imgHUDSheet;
@@ -40,9 +39,6 @@ function preload() {
   imgPlayerSheet = loadImage('libraries/Assets/Player/player.png');
   // Weapon
   imgWeaponSheet = loadImage('libraries/Assets/Player/Key-Blade.png');
-
-  // Enemy spritesheet
-  imgSlimes = loadImage('libraries/Assets/Enemies/slimes.png');
   
   // --- ADDED: Load the HUD spritesheet ---
   imgHUDSheet = loadImage('libraries/Assets/Player/HPMPBar.png');
